@@ -1,0 +1,142 @@
+﻿  Geometry.cpp
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(12): warning C4244: “初始化”: 从“T”转换到“int”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(14): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(15): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(32): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(33): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(64): warning C4244: “初始化”: 从“T”转换到“int”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(65): warning C4244: “初始化”: 从“T”转换到“int”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(67): warning C4244: “初始化”: 从“T”转换到“int”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(71): warning C4244: “=”: 从“T”转换到“int”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(78): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(79): warning C4244: “初始化”: 从“T”转换到“int”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(80): warning C4244: “初始化”: 从“T”转换到“int”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\geometry.cpp(81): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+  Ntmath.cpp
+c:\users\yt\source\repos\ntrender\ntrender\ntmath.cpp(21): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\ntmath.cpp(62): warning C4244: “参数”: 从“float”转换到“unsigned char”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\ntmath.cpp(66): warning C4244: “*=”: 从“float”转换到“unsigned char”，可能丢失数据
+  Model.cpp
+  Nt.cpp
+c:\users\yt\source\repos\ntrender\ntrender\nt.cpp(304): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\nt.cpp(305): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\nt.cpp(360): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\nt.cpp(361): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+  NtRender.cpp
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(36): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(64): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(67): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(228): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(263): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(292): warning C4244: “参数”: 从“int”转换到“T”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(312): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(316): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(319): warning C4244: “参数”: 从“int”转换到“T”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(328): warning C4244: “参数”: 从“int”转换到“T”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(372): warning C4244: “初始化”: 从“T”转换到“int”，可能丢失数据
+          with
+          [
+              T=float
+          ]
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(374): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\ntrender.cpp(375): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(105): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+  c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(104): note: 编译 类 模板 成员函数 "T NtImage<T>::Get(float,float) const" 时
+          with
+          [
+              T=Uint32
+          ]
+  c:\users\yt\source\repos\ntrender\ntrender\ntrender.h(61): note: 参见对正在编译的函数 模板 实例化“T NtImage<T>::Get(float,float) const”的引用
+          with
+          [
+              T=Uint32
+          ]
+  c:\users\yt\source\repos\ntrender\ntrender\ntrender.h(61): note: 参见对正在编译的 类 模板 实例化 "NtImage<Uint32>" 的引用
+c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(106): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+  NtUtility.cpp
+  NtEffect.cpp
+c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(165): warning C4305: “=”: 从“double”到“float”截断
+c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(167): warning C4305: “=”: 从“double”到“float”截断
+c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(169): warning C4305: “=”: 从“double”到“float”截断
+c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(105): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+  c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(104): note: 编译 类 模板 成员函数 "T NtImage<T>::Get(float,float) const" 时
+          with
+          [
+              T=Uint32
+          ]
+  c:\users\yt\source\repos\ntrender\ntrender\ntrender.h(61): note: 参见对正在编译的函数 模板 实例化“T NtImage<T>::Get(float,float) const”的引用
+          with
+          [
+              T=Uint32
+          ]
+  c:\users\yt\source\repos\ntrender\ntrender\ntrender.h(61): note: 参见对正在编译的 类 模板 实例化 "NtImage<Uint32>" 的引用
+c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(106): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+  tgaImage.cpp
+  源.cpp
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(52): warning C4305: “=”: 从“double”到“float”截断
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(74): warning C4305: “参数”: 从“double”到“float”截断
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(157): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(158): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(94): warning C4101: “lastX”: 未引用的局部变量
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(94): warning C4101: “lastY”: 未引用的局部变量
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(215): warning C4244: “+=”: 从“double”转换到“int”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(231): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(234): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(205): warning C4101: “event”: 未引用的局部变量
+c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(105): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+  c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(104): note: 编译 类 模板 成员函数 "T NtImage<T>::Get(float,float) const" 时
+          with
+          [
+              T=Uint32
+          ]
+  c:\users\yt\source\repos\ntrender\ntrender\ntrender.h(61): note: 参见对正在编译的函数 模板 实例化“T NtImage<T>::Get(float,float) const”的引用
+          with
+          [
+              T=Uint32
+          ]
+  c:\users\yt\source\repos\ntrender\ntrender\ntrender.h(61): note: 参见对正在编译的 类 模板 实例化 "NtImage<Uint32>" 的引用
+c:\users\yt\source\repos\ntrender\ntrender\ntimage.h(106): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+  正在生成代码...
+LINK : warning LNK4075: 忽略“/INCREMENTAL”(由于“/PROFILE”规范)
+Geometry.obj : warning LNK4075: 忽略“/EDITANDCONTINUE”(由于“/OPT:REF”规范)
+  NtRender.vcxproj -> C:\Users\YT\source\repos\NtRender\Debug\NtRender.exe
