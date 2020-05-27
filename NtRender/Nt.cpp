@@ -235,7 +235,7 @@ void NtWindow::init(int Width, int height)
 	gRender_ = SDL_CreateRenderer(gWindow_, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
 	//创建texture,注意像素格式和访问方式
-	gTexture_ = SDL_CreateTexture(gRender_, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 640, 480 );
+	gTexture_ = SDL_CreateTexture(gRender_, SDL_PIXELFORMAT_BGRA8888, SDL_TEXTUREACCESS_STREAMING, Width, height );
 	
 	
 }
@@ -248,16 +248,22 @@ void NtWindow::PresentWindow()
 }
 
 
-void NtWindow::FillWindow(const NtImage<Uint32>&image)
+void NtWindow::FillWindow(const NtImage &image)
 {
 	void* pix;
 	int pitch;
 	//SDL_PixelFormat* format;
 	SDL_LockTexture(gTexture_, NULL, &pix, &pitch);
 	//为了生成颜色,使用rgba8888的格式
-	//format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+
+	
 	int size = GetWindowHeight()*GetWindowWidth();
-	memcpy((Uint32*)pix, reinterpret_cast<const void*>( image.GetBuffer32()), size*sizeof(Uint32));
+	//memcpy(pix, image.GetBuffer(), size*sizeof(Uint32));
+	
+
+	for (int i = 0; i < size; i++)
+		((Uint32*)pix)[i] = image.GetRGBA32(i);
+
 	SDL_UnlockTexture(gTexture_);
 }
 

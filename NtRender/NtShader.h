@@ -23,6 +23,11 @@ public:
 class NtShader
 {
 public:
+
+	NtMatrix4x4 w;
+	NtMatrix4x4 v;
+	NtMatrix4x4 p;
+
 	virtual ptrBase VertexShader(const NtVertex& vertex) = 0;
 	virtual NtColor PixelShader(const NtVertexOutBaseFormat*) = 0;
 };

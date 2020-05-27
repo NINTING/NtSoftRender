@@ -46,37 +46,8 @@ NtMatrix3x3 NtMatrixRotationAxis(const NtVector3&axis, float angle)
 
 
 
-/*
-========================
-|	   NtColor         |
-========================
-*/
-
-NtColor NtColor::White = NtColor(0xffffff00);
-NtColor NtColor::Black = NtColor(0x00000000);
-NtColor NtColor::Blue = NtColor(0x0000ff00);
-NtColor NtColor::Green = NtColor(0x00ff0000);
-NtColor NtColor::Red = NtColor(0xff000000);
-NtColor NtColor::operator *(float intensity)const
+NtMatrix2x3 ComputerTangent(const NtMatrix2x2& TexCoordM, const NtMatrix2x3& SideM)
 {
-	return NtColor(R_ * intensity, G_ * intensity, B_ * intensity, A_);
-};
-NtColor NtColor::operator *=(float intensity)
-{
-	R_ *= intensity, G_ *= intensity, B_ *= intensity;
-	return *this;
-}
-
-NtColor  NtColor::operator +(const NtColor&rhs)const
-{
-	NtColor ret = NtColor();
-	for (int i = 0; i < 3; i++)
-	{
-		ret[i] = this->operator[](i) + rhs[i];
-	}
-	return ret;
-}
-void  NtColor::operator +=(const NtColor&rhs)
-{
-	*this = *(this) + rhs;
+	NtMatrix2x2 invertM = TexCoordM.invert();
+	return invertM * SideM;
 }

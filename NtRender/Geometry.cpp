@@ -6,7 +6,7 @@
 #include"tgaImage.h"
 #include<algorithm>
 using namespace Geometry;
-
+/*
 void Geometry::Line(NtVector3 v0, NtVector3 v1, NtImage<Uint32>*img, NtColor color)
 {
 	int x0 = v0.x(), y0 = v0.y(), x1 = v1.x(), y1 = v1.y();
@@ -100,3 +100,4 @@ static NtVector3 Barycentric(NtVector3 *  v, const NtVector3& P)
 	return NtVector3(-1, 1, 1);
 }
 
+*/

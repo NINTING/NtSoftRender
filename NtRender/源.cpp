@@ -6,6 +6,7 @@
 #include"NtRender.h"
 #include"Geometry.h"
 #include"Model.h"
+#include"LightHelper.h"
 #include"Effect.h"
 #include"tgaImage.h"
 #include"NtUtility.h"
@@ -17,80 +18,131 @@ SDL_Texture* gTexture = NULL;
 
 #define DegToRad(x) M_PI/180.0*(x)
 const double MS_PER_FRAME = 1000.0/10;
-NtVector3 Light_dir(0, 0, 1);
+
+NtVector4 AmbientLight(0.2f, 0.2f, 0.2f,1.f);
+std::shared_ptr<Light> MainLight = CreateDirectionalLight(NtVector3(1.f, 1.f, 1.f), NtVector3(0.f, 0.f, 1.f));
+
 /* Camera */
-NtVector3 Eye(0,0,1);
+NtVector3 Eye(0,0,1.5);
 NtVector3 Foucus(0,0,0);
 NtVector3 Up(0, 1, 0);
 NtCamera Camera;
-std::shared_ptr<NtSofterRender> render = NtSofterRender::Instance(640, 480);
+Model head,cube;
+
+int WindowWidth = 640;
+int WindowHeight = 480;
+
+std::shared_ptr<NtSofterRender> render = NtSofterRender::Instance(WindowWidth, WindowHeight);
 
 
-std::shared_ptr<NtWindow> window = NtWindow::Instance(640, 480);
+std::shared_ptr<NtWindow> window = NtWindow::Instance(WindowWidth, WindowHeight);
 
 
 
 void WindowInit()
 {
 	NtViewport vp;
-	vp.width = 640;
-	vp.height = 480;
+	vp.width = WindowWidth;
+	vp.height = WindowHeight;
 	vp.MinDepth = 0.001;
 	vp.MaxDepth = 1;
 	vp.TopLeftX = vp.TopLeftY = 0;
 	render->SetViewport(vp);
-	NtImage<Uint32>image = NtImage<Uint32>(window->GetWindowWidth(), window->GetWindowHeight());
+	NtImage image = NtImage (window->GetWindowWidth(), window->GetWindowHeight(),4);
 	window->FillWindow(image);
 	window->PresentWindow();
+}
+
+
+void CubeAssemble()
+{
+
+	cube.Assemble(render.get());
+	CGroudShader*cgs = new CGroudShader();
+	render->SetShader(cgs);
 }
 
 
 void HeadAssemble()
 {
 
+
+	NtMatrix4x4 world = NtMatrix4x4();
+
 	
-	render->SetLightDir(Light_dir);
-	Model head("african_head.obj");
+	TGroudShader*tgs = new TGroudShader();
+	PhoneShader*pgs = new PhoneShader();
+	pgs->diffuseTex = head.GetDiffuseTex();
+	pgs->w = world;
+	pgs->v = Camera.GetViewMatrix();
+	pgs->p = Camera.GetProjMatrix();
+	pgs->EyePosW = Camera.GetPos();
+	pgs->DirectionalLights.push_back(*MainLight->GetLightConstant());
+	pgs->mat = head.GetMaterial();
+	pgs->normalTex = head.GetNormalTex();
+	pgs->specularTex = head.GetSpecularTex();
+	pgs->Ambient = AmbientLight;
+
+	render->SetVertexBuffer(head.GetVertexsBuffer());
+	render->SetIndexBuffer(head.GetIndicesBuffer());
+	render->SetShader(pgs);
+
+	/*
 	Model cube("cube.obj");
 	render->SetVertexBuffer(head.GetVertexsBuffer());
 	render->SetIndexBuffer(head.GetIndicesBuffer());
-	
+
 	NtMatrix4x4 world = NtMatrix4x4();
 	render->SetWorldMatrix(world);
+
 	std::shared_ptr< NtImage<Uint32>>difftexture = std::make_shared<NtImage<Uint32>>();
 	NtUtility::Read_Tga_file("african_head_diffuse.tga",difftexture.get());
 	render->AddTexture(0, difftexture);
-	GroudShader* gs = new GroudShader();
-	
-	TGroudShader*tgs = new TGroudShader();
-	render->SetShader(tgs);
-
+	*/
 }
 
-void CubeAssemble()
+void Assemble()
 {
-	Model cube("cube.obj");
-	render->SetVertexBuffer(cube.GetVertexsBuffer());
-	render->SetIndexBuffer(cube.GetIndicesBuffer());
-	NtMatrix4x4 world = NtMatrix4x4();
-	render->SetWorldMatrix(world);
-	CGroudShader*cgs = new CGroudShader();
+	//sCubeAssemble();
+	HeadAssemble();
+}
+
+void Present_image(NtImage*img)
+{
+	window->FillWindow(*img);
+
+	window->PresentWindow();
 }
 
 void ModelInit()
 {
-	Model head("african_head.obj");
+	head.init("african_head.obj");
+	head.SetTexture("african_head_diffuse.tga");
+	head.SetNotmalTexture("african_head_nm.tga");
+	head.SetSpecularTexture("african_head_spec.tga");
+	Present_image(head.GetSpecularTex().get());
+	Material HeadMat;
+	HeadMat.diffTextureId = 0;
+	HeadMat.Roughness = 0.5;
+	HeadMat.name = "Head";
+	
+	HeadMat.MaterialId = 0;
+	head.SetMaterial(HeadMat);
+	cube.init("cube.obj");
+	Material CubeMat;
+	CubeMat.name = "Cube";
+	CubeMat.MaterialId = 0;
+	cube.SetMaterial(CubeMat);
 }
 
 void ScenceInit()
 {
 	
 
-	Light_dir.normalize();
 	Camera.LookAt(Eye, Foucus, Up);
 	Camera.SetViewFrustum(DegToRad(90), window->AspectRadio(), 0.1, 1000);
 	render->SetProjMatrix(Camera.GetProjMatrix());
-	Assemble();
+
 }
 
 
@@ -100,7 +152,7 @@ void UpdateScence(float dt)
 	
 	Camera.Update();
 	render->SetViewMatrix(Camera.GetViewMatrix());
-	
+	render->SetCameraPos(Camera.GetPos());
 }
 
 
@@ -202,7 +254,7 @@ bool ProcessInput(float dt)
 
 void Rnder()
 {
-	
+	Assemble();
 	render->Draw();
 
 
@@ -211,6 +263,7 @@ void Rnder()
 	window->PresentWindow();
 	
 }
+
 
 int main(int argc, char*argv[])
 {
@@ -224,6 +277,7 @@ int main(int argc, char*argv[])
 	bool done = false;
 	WindowInit();
 	ScenceInit();
+	ModelInit();		
 	std::stringstream  ss;
 	while (true) {
 		double CurrTime = GetCurrentTime();

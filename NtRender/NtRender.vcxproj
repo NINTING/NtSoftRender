@@ -73,7 +73,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\YT\source\repos\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -129,6 +129,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="LightHelper.cpp" />
+    <ClCompile Include="NtImage.cpp" />
     <ClCompile Include="Ntmath.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Nt.cpp" />
@@ -142,6 +144,7 @@
     <ClInclude Include="Command.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="LightHelper.h" />
     <ClInclude Include="Ntmath.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Nt.h" />

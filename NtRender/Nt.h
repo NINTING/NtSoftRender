@@ -12,7 +12,7 @@
 #include"NtShader.h"
 
 class NtColor;
-template<typename T> class NtImage;
+
 
 class NtWindow;
 
@@ -27,18 +27,19 @@ class NtVertex
 public:
 	NtVertex() {};
 	NtVertex(NtVector3 Position, NtVector3 Diffuse = NtVector3(), NtVector3 Normal = NtVector3())
-		:Position_(Position), Diffuse_(Diffuse), Normal_(Normal) {}
-	NtVector3 GetPostion()const { return Position_; }
-	NtVector3 GetDiffuse()const { return Diffuse_; }
-	NtVector3 GetNormal()const { return Normal_; }
-	void SetPosition(NtVector3 Position) { Position_ = Position; }
-	void SetDiffuse(NtVector3 Diffuse) { Position_ = Diffuse; }
-	void SetNormal(NtVector3 Normoal) { Position_ = Normoal; }
+		:Position(Position), Diffuse(Diffuse), Normal(Normal) {}
+	NtVector3 GetPostion()const { return Position; }
+	NtVector3 GetDiffuse()const { return Diffuse; }
+	NtVector3 GetNormal()const { return Normal; }
+	void SetPosition(NtVector3 Position) { Position = Position; }
+	void SetDiffuse(NtVector3 Diffuse) { Position = Diffuse; }
+	void SetNormal(NtVector3 Normoal) { Position = Normoal; }
 	NtVertex Interpolation(const NtVertex& rhs, float t);
-private:
-	NtVector3 Position_;
-	NtVector3 Diffuse_;
-	NtVector3 Normal_;
+
+	NtVector3 Position;
+	NtVector3 Diffuse;
+	NtVector3 Normal;
+	NtVector3 TangentU;
 };
 
 
@@ -68,7 +69,7 @@ public:
 
 	void init(int Width, int height);
 	void PresentWindow();
-	void FillWindow(const NtImage<Uint32>&image);
+	void FillWindow(const NtImage&image);
 
 	int GetWindowWidth();
 	int GetWindowHeight();
@@ -110,7 +111,7 @@ public:
 	void Strafe(float d);
 	void RotateY(float d);
 	void Pitch(float d);
-
+	NtVector3 GetPos() { return Pos_; }
 private:
 	//摄像机
 	NtVector3 Pos_ = NtVector3(0, 0, 0);
@@ -131,7 +132,7 @@ private:
 
 NtMatrix4x4 NtMatrixViewport(const NtViewport&vp);
 
-
+//外部使用
 struct Material
 {
 	std::string name;		//材质对应的名称
@@ -140,9 +141,25 @@ struct Material
 
 	//存入缓冲区中的数据
 	
-	NtColor diffuseAlbedo = { 1.f, 1.f, 1.f, 1.f };		//漫反射率 
-	NtColor FresnelR0 = { 0.01f, 0.01f, 0.01f, 0.01f };	//菲涅尔反射率
+	NtVector4 diffuseAlbedo = { 1.f, 1.f, 1.f, 1.f };		//漫反射率 
+	NtVector3 FresnelR0 = { 0.01f, 0.01f, 0.01f };	//菲涅尔反射率
 	float Roughness = 0.25;									//粗糙度  shininess = 1- Roughness 光滑度
 	//NtMatrix4x4 MatTransform;	//材质纹理伸缩变换
 }; 
+
+
+//缓存使用
+struct MaterialConstant
+{
+	MaterialConstant() {}
+	MaterialConstant(NtVector4 Albedo, NtVector3 R0, float roughness):diffuseAlbedo(Albedo), FresnelR0(R0),Roughness(roughness) {}
+
+	MaterialConstant(const Material& m)
+		:diffuseAlbedo(m.diffuseAlbedo), FresnelR0(m.FresnelR0), Roughness(m.Roughness) {}
+	NtVector4 diffuseAlbedo;		//漫反射率 
+	NtVector3 FresnelR0;	//菲涅尔反射率
+	float Roughness;
+};
+
+
 #endif

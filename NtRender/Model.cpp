@@ -4,7 +4,7 @@
 #include<fstream>
 #include<sstream>
 
-Model::Model(std::string fileName)
+void Model::init(std::string fileName)
 {
 	std::string suffix = fileName.substr(fileName.find_last_of(".")+1);
 	if (suffix == "obj")
@@ -35,8 +35,9 @@ Model::Model(std::string fileName)
 			{
 				iss >> trash;
 				NtVector3 vt;
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++) {
 					iss >> vt[i];
+				}
 				Texture.push_back(vt);
 			}
 			else if (!line.compare(0, 2, "vn"))
@@ -54,13 +55,27 @@ Model::Model(std::string fileName)
 				int vt, vn;
 				int v;
 				std::vector<Uint32>f;
-				while (iss>>v>>ttrash>>vt>>ttrash>>vn)
+				while (iss >> v >> ttrash >> vt >> ttrash >> vn)
 				{
 					//索引从0开始
-					Vertexs_.push_back(NtVertex(Position[v-1], Texture[vt-1], Normal[vn-1]));
+					Vertexs_.push_back(NtVertex(Position[v - 1], Texture[vt - 1], Normal[vn - 1]));
 					f.push_back(VCount++);
 				}
 				Faces_.push_back(f);
+
+				NtVertex& v0 = Vertexs_[f[0]];
+				NtVertex& v1 = Vertexs_[f[1]];
+				NtVertex& v2 = Vertexs_[f[2]];
+				NtVector3 e0 = v1.Position - v0.Position;
+				NtVector3 e1 = v2.Position - v0.Position;
+				NtMatrix2x3 sideM({ e0, e1 });
+				NtVector2 t0 = NtVector3To2(v1.Diffuse - v0.Diffuse);
+				NtVector2 t1 = NtVector3To2(v2.Diffuse - v0.Diffuse);
+				NtMatrix2x2 texCoordM({t0,t1});
+				NtMatrix2x3 tagent =  ComputerTangent(texCoordM, sideM);
+				v0.TangentU = tagent[0];
+				v1.TangentU = tagent[0];
+				v2.TangentU = tagent[0];
 			}
 		}
 	}
@@ -73,26 +88,30 @@ void Model::SetMaterial(const Material&mat)
 }
 void Model::SetTexture(const char*name)
 {
-	NtUtility::Read_Tga_file(name, diffuse.get());
+	diffuseTex = std::make_shared<NtImage>();
+	NtUtility::Read_Tga_file(name, diffuseTex.get());
 }
 
+void Model::SetNotmalTexture(const char*name)
+{
+	normalTex = std::make_shared<NtImage>();
+	NtUtility::Read_Tga_file(name, normalTex.get());
+}
+void Model::SetSpecularTexture(const char*name)
+{
+	specularTex = std::make_shared<NtImage>();
+	NtUtility::Read_Tga_file(name, specularTex.get());
+}
 void Model::Assemble(NtSofterRender*render)
 {
 
-
-	Model cube("cube.obj");
 	render->SetVertexBuffer(Vertexs_);
 	render->SetIndexBuffer(Faces_);
-
-	NtMatrix4x4 world = NtMatrix4x4();
-	render->SetWorldMatrix(world);
-	std::shared_ptr< NtImage<Uint32>>difftexture = std::make_shared<NtImage<Uint32>>();
-	NtUtility::Read_Tga_file("african_head_diffuse.tga", difftexture.get());
-	render->AddTexture(0, difftexture);
-	GroudShader* gs = new GroudShader();
-
-	TGroudShader*tgs = new TGroudShader();
-	render->SetShader(tgs);
+	render->SetWorldMatrix(World_);
+	render->AddTexture(mat_.diffTextureId, diffuseTex);
+	render->SetDiffuseTexture(mat_.diffTextureId);
+	render->AddMaterial(mat_.MaterialId, mat_);
+	render->SetMaterial(mat_.MaterialId);
 }
 
 void Model::Init()
@@ -101,8 +120,20 @@ void Model::Init()
 }
 
 
-Model::Model(std::vector<NtVertex> vertexs, std::vector<std::vector<Uint32>> Faces)
+Model::Model(std::vector<NtVertex>& vertexs, std::vector<std::vector<Uint32>>& Faces)
+{
+	init(vertexs, Faces);
+}
+
+
+
+void Model::init(std::vector<NtVertex>& vertexs, std::vector<std::vector<Uint32>>& Faces)
 {
 	Vertexs_ = vertexs;
 	Faces_ = Faces;
+}
+
+Model::Model(std::string fileName)
+{
+	init(fileName);
 }

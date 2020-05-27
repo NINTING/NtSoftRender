@@ -3,12 +3,7 @@
 
 
 
-struct NtSofterRender::MaterialConstant
-{
-	NtVector4 diffuseAlbedo;		//漫反射率 
-	NtVector4 FresnelR0;	//菲涅尔反射率
-	float Roughness;
-};
+
 
 void NtSofterRender::SetVertexBuffer(const std::vector<NtVertex>&vs)
 {
@@ -164,9 +159,9 @@ void NtSofterRender::Draw()
 
 NtSofterRender::NtSofterRender(int w, int h)
 {
-	FrontBuffer_ = new NtImage<Uint32>(w, h);
-	BackBuffer_ = new NtImage<Uint32>(w, h);
-	ZBuffer_ = new NtImage<float>(w, h);
+	FrontBuffer_ = new NtImage(w, h,4);
+	BackBuffer_ = new NtImage(w, h,4);
+	ZBuffer_ = new float[w*h];
 	IsBackCull = true;
 	//ZBuffer_->FillImage(2000);
 }
@@ -351,21 +346,21 @@ void NtSofterRender::BarycentricTriangle(const NtVertexOutBaseFormat* v0, const 
 
 void NtSofterRender::OutputMerge(int x, int y, float z, NtColor color)
 {
+	int w= BackBuffer_->GetWidth();
+
 	//z'=1/z z越小，z’越大
-	if (z > ZBuffer_->Get(x, y))
+	if (z > ZBuffer_[x+y* w])
 	{
-		ZBuffer_->Set(x, y, z);
-
-
-		BackBuffer_->Set(x, y, color.GetColor32());
+		ZBuffer_[x + y * w] = z;
+		BackBuffer_->Set(x, y, color);
 	}
 
 }
 
-NtImage<Uint32> NtSofterRender::Present()
+NtImage NtSofterRender::Present()
 {
 	std::swap(BackBuffer_, FrontBuffer_);
-	ZBuffer_->CleanBuffer();
+	CleanZBuffer();
 	BackBuffer_->CleanBuffer();
 	return *FrontBuffer_;
 }

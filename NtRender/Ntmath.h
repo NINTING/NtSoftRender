@@ -10,8 +10,8 @@
 #include<assert.h>
 #include<iostream>
 #include<SDL.h>
-template<typename T, size_t n> class NtMatrix;
-
+template<typename T, size_t n, size_t m> class NtMatrix;
+class NtColor;
 /*
 ========================
 |	   NtVector        |
@@ -127,6 +127,7 @@ public:
 template<typename T>
 class  NtVector<T, 4> :public NtVectorBase<T>
 {
+	
 public:
 	NtVector(T X, T Y, T Z, T W) :NtVectorBase<T>(4,raw) { raw[0] = X;  raw[1] = Y; raw[2] = Z; raw[3] = W; }
 	NtVector() :NtVectorBase<T>(4,raw) {}
@@ -134,6 +135,7 @@ public:
 		raw[0] = rhs.x();  raw[1] = rhs.y(); raw[2] = rhs.z(); raw[3] = rhs.w();
 	}
 	void normalize() { NtVectorBase<T>::normalize(); }
+	
 	NtVector& operator = (const NtVector&  rhs)
 	{
 		x (rhs.x());
@@ -174,6 +176,17 @@ NtVector<T, len>operator + (const NtVector<T, len>& lhs, const NtVector<T, len>&
 }
 
 template<typename  T, std::size_t len>
+NtVector<T, len> operator - (const NtVector<T, len>&rhs)
+{
+	NtVector<T, len> ret;
+	for (int i = 0; i < len; i++)
+	{
+		ret[i] = -rhs[i];
+	}
+	return ret;
+}
+
+template<typename  T, std::size_t len>
 void operator += (NtVector<T, len>& lhs, const NtVector<T, len>&  rhs)
 {
 	for (int i = 0; i < len; i++)
@@ -181,7 +194,17 @@ void operator += (NtVector<T, len>& lhs, const NtVector<T, len>&  rhs)
 		lhs[i] += rhs[i];
 	}
 }
+template<typename  T, std::size_t len>
+NtVector<T, len> ComponentMultiply(const NtVector<T, len>& lhs, const NtVector<T, len> rhs)
+{
 
+	NtVector<T, len> ret;
+	for (int i = 0; i < len; i++)
+	{
+		ret[i] = lhs[i] * rhs[i];
+	}
+	return ret;
+}
 template<typename  T, std::size_t len>
 NtVector<T, len>  operator - (const NtVector<T, len>& lhs, const NtVector<T, len>&  rhs)
 {
@@ -192,6 +215,28 @@ NtVector<T, len>  operator - (const NtVector<T, len>& lhs, const NtVector<T, len
 	}
 	return ret;
 }
+
+template<typename  T, std::size_t len>
+NtVector<T, len>  operator - (T lhs, const NtVector<T, len>&  rhs)
+{
+	NtVector<T, len> ret;
+	for (int i = 0; i < len; i++)
+	{
+		ret[i] = lhs - rhs[i];
+	}
+	return ret;
+}
+template<typename  T, std::size_t len>
+NtVector<T, len>  operator + (T lhs, const NtVector<T, len>&  rhs)
+{
+	NtVector<T, len> ret;
+	for (int i = 0; i < len; i++)
+	{
+		ret[i] = lhs + rhs[i];
+	}
+	return ret;
+}
+
 
 template<typename  T, std::size_t len>
 void operator -= (NtVector<T, len>& lhs, const NtVector<T, len>&  rhs)
@@ -214,7 +259,20 @@ T  operator * (const NtVector<T, len>& lhs, const NtVector<T, len>&  rhs)
 }
 
 template<typename  T, std::size_t len>
-NtVector<T, len>  operator * (const NtVector<T, len>& lhs, T rhs)
+const NtVector<T, len> operator / (const NtVector<T, len>& lhs, const NtVector<T, len>&  rhs)
+{
+	NtVector<T, len> ret;
+	for (int i = 0; i < len; i++)
+	{
+		ret[i] = lhs[i] / rhs[i];
+	}
+	return ret;
+}
+
+
+
+template<typename  T, std::size_t len>
+NtVector<T, len> operator * (const NtVector<T, len>& lhs, const T&  rhs)
 {
 
 	NtVector<T, len> ret;
@@ -242,13 +300,13 @@ NtVector<T, 3> Cross(const NtVector<T, 3>& lhs, const NtVector<T, 3>&  rhs)
 
 	return NtVector<T, 3>(lhs.y()*rhs.z() - lhs.z()*rhs.y(), lhs.z()*rhs.x() - lhs.x()*rhs.z(), lhs.x()*rhs.y() - rhs.x()*lhs.y());
 }
-template<typename  T, std::size_t len>
-NtVector<T, len>  operator * (const NtVector<T, len>& lhs, const NtMatrix<T, len>&  rhs)
+template<typename  T, std::size_t n, std::size_t m>
+NtVector<T, m>  operator * (const NtVector<T, n>& lhs, const NtMatrix<T, n,m>&  rhs)
 {
 	NtVector<T, len> ret;
-	for (int i = 0; i < len; i++)
+	for (int i = 0; i < m; i++)
 	{
-		for (int j = 0; j < len; j++)
+		for (int j = 0; j < n; j++)
 		{
 			ret[i] += lhs[j] * rhs[j][i];
 		}
@@ -271,7 +329,15 @@ NtVector<T, 2> NtVector3To2(const NtVector<T, 3>& rhs)
 {
 	return NtVector<T, 2>(rhs.x(), rhs.y());
 }
-
+template<typename  T,size_t t,size_t n>
+void NtVectorTruncation(const NtVector<T, t>& rhs, NtVector<T, n>& out)
+{
+	assert(t > n);
+	
+	for (int i = 0; i < n; i++)
+		out[i] = rhs[i];
+	
+}
 /*
 ========================
 |	   NtMatrix        |
@@ -279,14 +345,21 @@ NtVector<T, 2> NtVector3To2(const NtVector<T, 3>& rhs)
 */
 
 
-template<typename T, size_t n>
+template<typename T, size_t n,size_t m>
 class NtMatrix
 {
 public:
+	NtMatrix(std::initializer_list<NtVector<T, m>>vs)
+	{
+		auto it = v.begin();
+		for (int i = 0; i < n; i++)
+			raw[i] = *(it + i);
+		
+	}
 	NtMatrix()
 	{
 		for (int i = 0; i < n; i++)
-			for (int j = 0; j < n; j++)
+			for (int j = 0; j < m; j++)
 				if (i == j)
 					raw[i][j] = 1;
 	};
@@ -295,20 +368,29 @@ public:
 		auto it = v.begin();
 		for (int i = 0; i < n; i++)
 		{
-			for (int j = 0; j < n; j++)
+			for (int j = 0; j < m; j++)
 			{
-				raw[i][j] = *(it + i * n + j);
+				raw[i][j] = *(it + i * m + j);
 			}
 		}
 	}
-
-	void zero() {
+	NtVector<T, n>col(int c)
+	{
+		NtVector<T, n> ret;
 		for (int i = 0; i < n; i++)
-			for (int j = 0; j < n; j++)
+		{
+			ret[i] = raw[i][c];
+		}
+		return ret;
+	}
+	void zero() 
+	{
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < m; j++)
 				raw[i][j] = 0;
 	}
-	NtVector<T, n> operator[](const size_t i) const { return raw[i]; }
-	NtVector<T, n>& operator[](const size_t i) { return raw[i]; }
+	NtVector<T, m> operator[](const size_t i) const { return raw[i]; }
+	NtVector<T, m>& operator[](const size_t i) { return raw[i]; }
 
 	NtMatrix&  operator = (const NtMatrix& rhs)
 	{
@@ -318,6 +400,62 @@ public:
 		}
 		return *this;
 	}
+
+	NtMatrix<T, n - 1, m - 1>get_minor(size_t r,size_t c)const //余子式  用于求行列式
+	{
+		NtMatrix<T, n - 1, m - 1> ret;
+		for (int i = 0; i < m - 1; i++)
+			for (int j = 0; j < n - 1; j++)
+				ret[i][j] = raw[i < r ? i : i + 1][j < c ? j : j + 1];
+		return ret;
+	}
+	float cofactor(size_t r, size_t c)const//求代数余子式的行列式
+	{
+		return get_minor(0, i).det()*(i % 2 ? -1 : 1);
+	}
+
+	//不讲代数余子式转置，而是留到逆转置矩阵进行转置
+	NtMatrix adjugate()const
+	{
+		NtMatrix<T, n, m>ret;
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < m; j++)
+				ret[i][j] = cofactor(i, j);
+		return ret;
+	}
+	NtMatrix invert_transpose()const
+	{
+		NtMatrix ret = adjugate();
+		//伴随矩阵的每一个元素都是原矩阵的代数余子式的行列式
+		//相乘就是原矩阵的行列式
+		float tmp = raw[0] * ret[0];
+
+		return ret / tmp;
+	}
+	NtMatrix invert()const
+	{
+		return invert_transpose().transpose();
+	}
+
+	float det()	const	//求行列式
+	{
+		float ans = 0;
+		for (int i = 0; i < n; i++)
+		{
+			ans += raw[0][i] * cofactor(0, i);
+		}
+	}
+
+	NtMatrix<T,m,n> transpose()const
+	{
+		NtMatrix<T, m, n> ret;
+		for (int i = 0; i < m; i++)
+		{
+			ret[i] = col[i];
+		}
+		return ret;
+	}
+
 	void Print()const
 	{
 		for (size_t i = 0; i < n; i++)
@@ -325,25 +463,39 @@ public:
 			raw[i].Print();
 		}
 	}
+
 private:
-	NtVector<T, n> raw[n];
+	NtVector<T, m> raw[n];
 };
 
 
-template<typename  T, std::size_t len>
-NtMatrix<T, len>  operator * (const NtMatrix<T, len>& lhs, const NtMatrix<T, len>& rhs)
+template<typename  T, std::size_t row,size_t col0,size_t col1>
+NtMatrix<T, row,col1>  operator * (const NtMatrix<T, row,col0>& lhs, const NtMatrix<T, col0,col1>& rhs)
 {
 	NtMatrix<T, len>ret;
 	ret.zero();
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			for (int k = 0; k < 4; k++)
+	for (int i = 0; i < row; i++) {
+		for (int j = 0; j < col1; j++) {
+			for (int k = 0; k < col0; k++)
 				ret[i][j] += lhs[i][k] * rhs[k][j];
 		}
 	}
 	return ret;
 }
+
+template<typename  T, std::size_t row, size_t col>
+NtMatrix<T, row, col> operator /(const NtMatrix<T, row, col>& lhs, T rhs)
+{
+	NtMatrix<T, row, col> ret;
+	for (int i = 0; i < row; i++)
+	{
+		for (int j = 0; j < col; j++)
+			ret[i][j] = lhs[i][j] / rhs;
+	}
+	return ret;
+}
+
 
 using  NtVector3 = NtVector<float, 3>;
 using  NtVector2 = NtVector<float, 2>;
@@ -353,61 +505,19 @@ using  NtVector3i = NtVector<int, 3>;
 using  NtVector2i = NtVector<int, 2>;
 using  NtVector4i = NtVector<int, 3>;
 
-using  NtMatrix3x3 = NtMatrix<float, 3>;
-using  NtMatrix4x4 = NtMatrix<float, 4>;
+using  NtMatrix2x2 = NtMatrix<float, 2,2>;
+using  NtMatrix3x3 = NtMatrix<float, 3,3>;
+using  NtMatrix4x4 = NtMatrix<float, 4,4>;
+using  NtMatrix2x3 = NtMatrix<float, 2,3>;	//2row ,3col
 
 
 NtMatrix3x3 NtMatrixRotationAxis(const NtVector3&axis, float angle);
 
 NtMatrix4x4 NtMatrixPerspective(float FovAngleY, float Aspect, float NearZ, float FarZ);
 
+NtMatrix2x3 ComputerTangent(const NtMatrix2x2& TexCoordM, const NtMatrix2x3& SideM);
 
 
-
-/*
-========================
-|	   NtColor         |
-========================
-*/
-
-const Uint32 White32 = 0xffffff00;
-const Uint32 Black32 = 0x00000000;
-const Uint32 Red32 = 0xff000000;
-const Uint32 Green32 = 0x00ff0000;
-const Uint32 Blue32 = 0x0000ff00;
-const Uint32 Trans32 = 0x000000ff;
-
-
-
-
-
-class NtColor
-{
-public:
-	NtColor() { R_ = G_ = B_ = A_ = 0; }
-	NtColor(unsigned char R, unsigned char G, unsigned char B, int A = 0) :R_(R), G_(G), B_(B), A_(A)
-	{
-		//ColorPack_ = (R << 24) + (G << 16) +( B << 8) + A;
-	}
-	NtColor(Uint32 color) {
-		R_ = color >> 24, G_ = (color & Green32) >> 16, B_ = (color & Blue32) >> 8, A_ = color & Trans32;
-	}
-	static NtColor White, Black, Red, Green, Blue;
-	unsigned char& operator [](size_t i) { return i == 0 ? R_ : i == 1 ? G_ : i == 2 ? B_ : A_; }
-	unsigned char operator [](size_t i) const { return i == 0 ? R_ : i == 1 ? G_ : i == 2 ? B_ : A_; }
-	void SetColor(unsigned char R, unsigned char G, unsigned char B, int A = 0)
-	{
-		R_ = R; G_ = G; B_ = B; A_ = A;
-	}
-	NtColor operator *(float intensity)const;
-	NtColor operator *=(float intensity);
-	NtColor operator +(const NtColor&rhs)const;
-	void operator +=(const NtColor&rhs);
-	Uint32 GetColor32()const { return  (R_ << 24) | (G_ << 16) | (B_ << 8) | A_; }
-private:
-	unsigned char R_, G_, B_, A_;
-	//Uint32 ColorPack_;
-};
 
 
 #endif // !NTCOLOR_H
