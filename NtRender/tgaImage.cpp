@@ -199,7 +199,7 @@ bool TGAImage::read_tga_file(const char *filename) {
 		return false;
 	}
 	if (!(header.imagedescriptor & 0x20)) {
-		flip_vertically();
+		flip_vertically ();
 	}
 	if (header.imagedescriptor & 0x10) {
 		flip_horizontally();

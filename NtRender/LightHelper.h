@@ -29,9 +29,10 @@ struct Light
 
 	void SetStrength(const NtVector3& s) { pConstant->Strength = s; };
 	void SetDirection(const NtVector3& dir) { pConstant->Direction = dir; };
-	NtVector3 GetStrength() { return  pConstant->Strength; };
-	NtVector3 GetDirection() { return pConstant->Direction; };
-	LightConstant* GetLightConstant() { return pConstant; }
+	NtVector3 GetStrength() const{ return  pConstant->Strength; };
+	NtVector3 GetDirection() const{ return pConstant->Direction; };
+	LightConstant* GetLightConstant() const{ return pConstant; }
+	void normalise() { pConstant->Direction.normalize();  }
 	~Light() { delete pConstant; }
 	int index;
 	LightType type = DirectionalLight;
@@ -50,7 +51,7 @@ NtVector3 BilnnPhone(const NtVector3& LightStrength, const NtVector3&normal, con
 
 NtVector3 ComputeDirectionLight(const LightConstant& l, const NtVector3&normal, const MaterialConstant& mat,const NtVector3& toEye);
 
-NtVector4 ComputeLight(const std::vector<LightConstant>& DirLights, const NtVector3&pos, const NtVector3&normal, const NtVector3& toEye, const  MaterialConstant&mat);
+NtVector4 ComputeLight(const std::vector<LightConstant>& DirLights, const NtVector3&pos, const NtVector3&normal, const NtVector3& toEye, const  MaterialConstant&mat,float shadowfactor=1);
 
 
 #endif

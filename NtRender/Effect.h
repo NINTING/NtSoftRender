@@ -3,9 +3,10 @@
 #define EFFECT_H
 
 #include"NtShader.h"
-
+#include<vector>
+#include"LightHelper.h"
 class NtGroudVertexFormat;
-
+class NtImage;
 /*
 ========================
 |	sample Ground      |
@@ -246,7 +247,98 @@ public:
 
 
 
+/*
+========================
+|	Shadow Shanding     |
+========================
+*/
+//生成深度图
 
+
+#define mks_ptrShadow std::make_shared<NtShadowVertexFormat>() 
+
+class NtShadowVertexFormat :public NtVertexOutBaseFormat
+{
+public:
+	using sVFptr = std::shared_ptr<NtShadowVertexFormat>;
+	using VFptr = NtShadowVertexFormat * ;
+	using cVFptr = const NtShadowVertexFormat *;
+public:
+	NtShadowVertexFormat() = default;
+	NtShadowVertexFormat(const NtVector4& posH, const NtVector3&posW) : NtVertexOutBaseFormat(posH), PosW(posW) {}
+	virtual ptrBase Copy()const;
+	virtual ptrBase LineInterpolation(const NtVertexOutBaseFormat* rhs, float t);
+	void PerspectiveInterpolation(const   NtVertexOutBaseFormat* A, const  NtVertexOutBaseFormat* B, const  NtVertexOutBaseFormat* C,
+		float a, float b, float c);
+	virtual ~NtShadowVertexFormat() = default;
+public:
+	NtVector3 PosW;//世界坐标
+};
+
+class ShadowShader :public NtShader
+{
+public:
+	//方法区
+	using sVFptr = NtShadowVertexFormat::sVFptr;
+	using cVFptr = NtShadowVertexFormat::cVFptr;
+	virtual ptrBase VertexShader(const NtVertex& vertex);
+	virtual NtColor PixelShader(const NtVertexOutBaseFormat* pin);
+};
+
+/*
+========================
+| STPhone Shanding |
+========================
+*/
+//阴影 法向渲染
+
+
+#define mks_ptrSTPhone std::make_shared<NtSTPhoneVertexFormat>() 
+
+class NtSTPhoneVertexFormat :public NtVertexOutBaseFormat
+{
+public:
+	using sVFptr = std::shared_ptr<NtSTPhoneVertexFormat>;
+	using VFptr = NtSTPhoneVertexFormat * ;
+	using cVFptr = const NtSTPhoneVertexFormat *;
+public:
+	NtSTPhoneVertexFormat() = default;
+	NtSTPhoneVertexFormat(const NtVector4& posH, const NtVector3&posW) : NtVertexOutBaseFormat(posH), PosW(posW) {}
+	virtual ptrBase Copy()const;
+	virtual ptrBase LineInterpolation(const NtVertexOutBaseFormat* rhs, float t);
+	void PerspectiveInterpolation(const   NtVertexOutBaseFormat* A, const  NtVertexOutBaseFormat* B, const  NtVertexOutBaseFormat* C,
+		float a, float b, float c);
+	virtual ~NtSTPhoneVertexFormat() = default;
+public:
+	NtVector3 PosW;//世界坐标
+	NtVector2 texCoor;
+	NtVector3 Normal;
+	NtVector3 TangentW;
+	NtVector4 ShadowTexH;	//保留w，先不进行透视除法，直到采样深度
+
+};
+
+class STPhoneShader :public NtShader
+{
+public:
+	//数据区
+	std::vector<LightConstant> DirectionalLights;
+	std::vector<LightConstant> PointLights;
+	std::vector<LightConstant> SpotLights;
+	NtVector4 Ambient;
+	std::shared_ptr<NtImage>diffuseTex;
+	std::shared_ptr<NtImage>tangentTex;
+	std::shared_ptr<NtImage>specularTex;
+	std::shared_ptr<NtImage>ShadowTex;
+	NtVector3 EyePosW;
+	MaterialConstant mat;
+	NtMatrix4x4 vpt;
+	//方法区
+	using sVFptr = NtSTPhoneVertexFormat::sVFptr;
+	using cVFptr = NtSTPhoneVertexFormat::cVFptr;
+	virtual ptrBase VertexShader(const NtVertex& vertex);
+	virtual NtColor PixelShader(const NtVertexOutBaseFormat* pin);
+};
 
 
 #endif // !EFFECT_H

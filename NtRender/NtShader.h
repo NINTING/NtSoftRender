@@ -32,3 +32,6 @@ public:
 	virtual NtColor PixelShader(const NtVertexOutBaseFormat*) = 0;
 };
 
+
+
+

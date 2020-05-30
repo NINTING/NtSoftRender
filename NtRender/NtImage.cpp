@@ -42,6 +42,11 @@ void NtImage::Set(int x, int y,const NtColor& color)
 	for(int i = 0;i<BytesPerPixel_;i++)
 		Buffer_[idx+i] = color[i];
 }
+void NtImage::Set(int i, const NtColor& color)
+{
+	for (int j = 0; j < BytesPerPixel_; j++)
+		Buffer_[j + i] = color[j];
+}
 
 Uint32 NtImage::GetRGBA32(int x, int y)const
 {
@@ -105,7 +110,17 @@ NtColor NtImage::GetPixel(float x, float y)const
 		ret[i] = Buffer_[index + i];
 	return ret;
 }
+NtVector4 NtImage::GetPixelfloat(float x, float y)const
+{
+	NtVector4 ret;
+	int wx = x * Width_;
+	int hy = y * Height_;
+	size_t index = wx * BytesPerPixel_ + hy * Width_*BytesPerPixel_;
 
+	for (int i = 0; i < BytesPerPixel_; i++)
+		ret[i] = Buffer_[index + i]*over255;
+	return ret;
+}
 NtVector3 NtImage::normal(float x, float y)
 {
 	//法线向量存储格式不同 ，为了兼容RGBA格式，因此法线存储变为了(z，y，x)

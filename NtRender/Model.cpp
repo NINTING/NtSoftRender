@@ -102,16 +102,15 @@ void Model::SetSpecularTexture(const char*name)
 	specularTex = std::make_shared<NtImage>();
 	NtUtility::Read_Tga_file(name, specularTex.get());
 }
+void Model::SetTangentTexture(const char*name)
+{
+	tangentTex = std::make_shared<NtImage>();
+	NtUtility::Read_Tga_file(name, tangentTex.get());
+}
+
 void Model::Assemble(NtSofterRender*render)
 {
 
-	render->SetVertexBuffer(Vertexs_);
-	render->SetIndexBuffer(Faces_);
-	render->SetWorldMatrix(World_);
-	render->AddTexture(mat_.diffTextureId, diffuseTex);
-	render->SetDiffuseTexture(mat_.diffTextureId);
-	render->AddMaterial(mat_.MaterialId, mat_);
-	render->SetMaterial(mat_.MaterialId);
 }
 
 void Model::Init()

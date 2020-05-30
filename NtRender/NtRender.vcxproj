@@ -137,6 +137,8 @@
     <ClCompile Include="NtRender.cpp" />
     <ClCompile Include="NtUtility.cpp" />
     <ClCompile Include="NtEffect.cpp" />
+    <ClCompile Include="ShaderAssemble.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="tgaImage.cpp" />
     <ClCompile Include="源.cpp" />
   </ItemGroup>
@@ -151,6 +153,8 @@
     <ClInclude Include="NtImage.h" />
     <ClInclude Include="NtRender.h" />
     <ClInclude Include="NtShader.h" />
+    <ClInclude Include="ShaderAssemble.h" />
+    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="tgaImage.h" />
     <ClInclude Include="NtUtility.h" />
   </ItemGroup>

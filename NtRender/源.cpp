@@ -12,6 +12,8 @@
 #include"NtUtility.h"
 #include<sstream>
 #include<windows.h>
+#include"ShaderAssemble.h"
+#include"ShadowMap.h"
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRender = NULL;
 SDL_Texture* gTexture = NULL;
@@ -20,13 +22,14 @@ SDL_Texture* gTexture = NULL;
 const double MS_PER_FRAME = 1000.0/10;
 
 NtVector4 AmbientLight(0.2f, 0.2f, 0.2f,1.f);
-std::shared_ptr<Light> MainLight = CreateDirectionalLight(NtVector3(1.f, 1.f, 1.f), NtVector3(0.f, 0.f, 1.f));
+std::shared_ptr<Light> MainLight = CreateDirectionalLight(NtVector3(1.f, 1.f, 1.f), NtVector3(0.f, 0.f, -1.f));
 
 /* Camera */
-NtVector3 Eye(0,0,1.5);
+NtVector3 Eye(0,0,1.5);	
 NtVector3 Foucus(0,0,0);
 NtVector3 Up(0, 1, 0);
 NtCamera Camera;
+NtCamera LightCamera;
 Model head,cube;
 
 int WindowWidth = 640;
@@ -37,8 +40,14 @@ std::shared_ptr<NtSofterRender> render = NtSofterRender::Instance(WindowWidth, W
 
 std::shared_ptr<NtWindow> window = NtWindow::Instance(WindowWidth, WindowHeight);
 
-
-
+ShadowMap shadowmap(render.get(), WindowWidth, WindowHeight);
+void Present_image(NtImage*img);
+enum RenderEnum
+{
+	TPhone,
+	Phone,
+	STPhone
+}renderFlag ;
 void WindowInit()
 {
 	NtViewport vp;
@@ -57,54 +66,53 @@ void WindowInit()
 void CubeAssemble()
 {
 
-	cube.Assemble(render.get());
-	CGroudShader*cgs = new CGroudShader();
-	render->SetShader(cgs);
+	NtMatrix4x4 world = NtMatrix4x4();
+	if (renderFlag == STPhone) {
+		render->CleanBackAndDepthBuffer();
+		shadowmap.SetMainLight(LightCamera);
+		auto depthTex = shadowmap.BuildDepthMap(world, cube);
+		//Present_image(depthTex.get());
+	    render->CleanBackAndDepthBuffer();
+		STPhoneAssemble(cube, Camera, render.get(), *MainLight.get(), AmbientLight, shadowmap);
+	}
+	else if (renderFlag == TPhone)
+	{
+		render->CleanBackAndDepthBuffer();
+		TPhoneAssemble(cube, Camera, render.get(), *MainLight.get(), AmbientLight);
+
+	}
 }
 
 
-void HeadAssemble()
+
+
+void HeadPhoneAssemble()
 {
 
-
 	NtMatrix4x4 world = NtMatrix4x4();
+	if (renderFlag == STPhone) {
+		render->CleanBackAndDepthBuffer();
+		shadowmap.SetMainLight(LightCamera);
+		auto depthTex = shadowmap.BuildDepthMap(world, head);
+		//Present_image(depthTex.get());
+		render->CleanBackAndDepthBuffer();
+		STPhoneAssemble(head, Camera, render.get(), *MainLight.get(), AmbientLight, shadowmap);
+	}
+	else if (renderFlag == TPhone)
+	{
+		render->CleanBackAndDepthBuffer();
+		TPhoneAssemble(head, Camera, render.get(), *MainLight.get(), AmbientLight);
 
-	
-	TGroudShader*tgs = new TGroudShader();
-	PhoneShader*pgs = new PhoneShader();
-	pgs->diffuseTex = head.GetDiffuseTex();
-	pgs->w = world;
-	pgs->v = Camera.GetViewMatrix();
-	pgs->p = Camera.GetProjMatrix();
-	pgs->EyePosW = Camera.GetPos();
-	pgs->DirectionalLights.push_back(*MainLight->GetLightConstant());
-	pgs->mat = head.GetMaterial();
-	pgs->normalTex = head.GetNormalTex();
-	pgs->specularTex = head.GetSpecularTex();
-	pgs->Ambient = AmbientLight;
+	}
 
-	render->SetVertexBuffer(head.GetVertexsBuffer());
-	render->SetIndexBuffer(head.GetIndicesBuffer());
-	render->SetShader(pgs);
-
-	/*
-	Model cube("cube.obj");
-	render->SetVertexBuffer(head.GetVertexsBuffer());
-	render->SetIndexBuffer(head.GetIndicesBuffer());
-
-	NtMatrix4x4 world = NtMatrix4x4();
-	render->SetWorldMatrix(world);
-
-	std::shared_ptr< NtImage<Uint32>>difftexture = std::make_shared<NtImage<Uint32>>();
-	NtUtility::Read_Tga_file("african_head_diffuse.tga",difftexture.get());
-	render->AddTexture(0, difftexture);
-	*/
 }
 
 void Assemble()
 {
-	//sCubeAssemble();
-	HeadAssemble();
+	
+	//Present_image(depthTex.get());
+	HeadPhoneAssemble();
+	//CubeAssemble();
 }
 
 void Present_image(NtImage*img)
@@ -121,15 +129,17 @@ void ModelInit()
 	head.SetNotmalTexture("african_head_nm.tga");
 	head.SetSpecularTexture("african_head_spec.tga");
 	Present_image(head.GetSpecularTex().get());
+	head.SetTangentTexture("african_head_nm_tangent.tga");
+
 	Material HeadMat;
 	HeadMat.diffTextureId = 0;
 	HeadMat.Roughness = 0.5;
 	HeadMat.name = "Head";
-	
 	HeadMat.MaterialId = 0;
 	head.SetMaterial(HeadMat);
 	cube.init("cube.obj");
 	Material CubeMat;
+
 	CubeMat.name = "Cube";
 	CubeMat.MaterialId = 0;
 	cube.SetMaterial(CubeMat);
@@ -137,11 +147,12 @@ void ModelInit()
 
 void ScenceInit()
 {
-	
-
+	//MainLight->GetDirection()*-2.f
+	LightCamera.LookAt(-MainLight->GetDirection(), NtVector3(0, 0, 0), NtVector3(0, 1, 0));
+	//只需要将正交投影视景体覆盖整个场景即可
+	LightCamera.SetVisualBody(3,3,0.1,10);
 	Camera.LookAt(Eye, Foucus, Up);
 	Camera.SetViewFrustum(DegToRad(90), window->AspectRadio(), 0.1, 1000);
-	render->SetProjMatrix(Camera.GetProjMatrix());
 
 }
 
@@ -151,8 +162,8 @@ void UpdateScence(float dt)
 {
 	
 	Camera.Update();
-	render->SetViewMatrix(Camera.GetViewMatrix());
-	render->SetCameraPos(Camera.GetPos());
+	LightCamera.Update();
+	MainLight->normalise();
 }
 
 
@@ -178,31 +189,31 @@ bool ProcessInput(float dt)
 				case SDLK_ESCAPE:
 					return true;
 				case SDLK_w:
-					Camera.Walk(3 * dt);
+					Camera.Walk(0.1);
 					break;
 				case SDLK_s:
 					{
-						Camera.Walk(-3 * dt);
+						Camera.Walk(-0.1);
 						break;
 					}
 				case SDLK_a:
 					{
-						Camera.Strafe(-3 * dt);
+						Camera.Strafe(-0.1);
 						break;
 					}
 				case SDLK_d:
 					{
-						Camera.Strafe(3 * dt);
+						Camera.Strafe(0.1);
 						break;
 					}
 				case SDLK_v:
 					{
-						render->SetRenderState(NtSofterRender::Wireframe);
+						render->SetRenderState(Wireframe);
 						break;
 					}
 				case SDLK_g:
 					{
-						render->SetRenderState(NtSofterRender::GroundShading);
+						render->SetRenderState(GroundShading);
 						break;
 					}
 				case SDLK_b:
@@ -211,6 +222,16 @@ bool ProcessInput(float dt)
 						render->SetBackCull(false);
 					else
 						render->SetBackCull(true);
+					break;
+				}
+				case SDLK_z:
+				{
+					renderFlag = STPhone;
+					break;
+				}
+				case SDLK_x:
+				{
+					renderFlag = TPhone;
 					break;
 				}
 				default:
@@ -254,6 +275,7 @@ bool ProcessInput(float dt)
 
 void Rnder()
 {
+
 	Assemble();
 	render->Draw();
 
@@ -267,7 +289,7 @@ void Rnder()
 
 int main(int argc, char*argv[])
 {
-	
+	renderFlag = TPhone;
  	int frameCount = 0;
 	int acculateElapse = 0;
 	float fps = 0;
@@ -309,7 +331,7 @@ int main(int argc, char*argv[])
 		lastTime = CurrTime;
 		
 	}
-	
+
 	return 0;
 } // end of message processing
 

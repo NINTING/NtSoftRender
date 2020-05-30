@@ -48,6 +48,12 @@
     <ClCompile Include="NtImage.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderAssemble.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Nt.h">
@@ -84,6 +90,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="LightHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderAssemble.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMap.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

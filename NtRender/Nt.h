@@ -93,8 +93,18 @@ private:
 	SDL_Texture* gTexture_ = NULL;
 };
 
-
-
+struct Frustum
+{
+	float nearZ, farZ;
+	float aspect;
+	float nearH, farH;
+	float fovY;
+};
+struct VRectangle
+{
+	float Width, Heiht;
+	float Near, Far;
+};
 
 
 class NtCamera
@@ -105,13 +115,14 @@ public:
 	void LookAt(const NtVector3& Pos,const NtVector3& Target,const NtVector3& Up);
 	void Update();
 	void SetViewFrustum(float FovAngleY, float Aspect, float NearZ, float FarZ);
-	NtMatrix4x4 GetViewMatrix();
-	NtMatrix4x4 GetProjMatrix();
+	void SetVisualBody(float Width, float Height, float NearZ, float FarZ);
+	NtMatrix4x4 GetViewMatrix()const;
+	NtMatrix4x4 GetProjMatrix()const;
 	void Walk(float d);
 	void Strafe(float d);
 	void RotateY(float d);
 	void Pitch(float d);
-	NtVector3 GetPos() { return Pos_; }
+	NtVector3 GetPos() const{ return Pos_; }
 private:
 	//ÉãÏñ»ú
 	NtVector3 Pos_ = NtVector3(0, 0, 0);
@@ -120,10 +131,11 @@ private:
 	NtVector3 Look_ = NtVector3(0, 0, 1);
 	bool ViewDirty_;
 	//ÊÓ×¶
-	float nearZ_, farZ_;
-	float aspect_;
-	float nearH_, farH_;
-	float fovY;
+	union body
+	{
+		Frustum frustum;
+		VRectangle rectangle;
+	}VisualBody;
 
 	//±ä»»¾ØÕó
 	NtMatrix4x4 View_;

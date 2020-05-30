@@ -78,7 +78,7 @@ public:
 
 	NtColor GetPixel(int x, int y)const;
 	NtColor GetPixel(float x,float y)const;
-
+	NtVector4 GetPixelfloat(float x, float y)const;
 	size_t GetImageSize()const { return Width_ * Height_; }
 	
 	//如果该纹理存储的是法向量
@@ -97,6 +97,7 @@ public:
 	int GetBytesPerPixel() const { return BytesPerPixel_; }
 	/*Set 方法*/
 	void Set(int x, int y, const NtColor& color);
+	void Set(int i, const NtColor& color);
 	void SetWidth(int width) { Width_ = width; };
 	void SetHeight(int height) { Height_ = height; };
 	//void SetZ(int x, int y,float z);
@@ -122,5 +123,6 @@ private:
 	//unsigned char *data;
 
 };
+
 
 #endif

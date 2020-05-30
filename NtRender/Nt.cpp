@@ -358,20 +358,30 @@ void NtCamera::Update()
 }
 void NtCamera::SetViewFrustum(float FovAngleY, float Aspect, float NearZ, float FarZ)
 {
-	nearZ_ = NearZ;
-	farZ_ = FarZ;
-	aspect_ = Aspect;
-	fovY = FovAngleY;
-	Proj_ = NtMatrixPerspective(fovY,aspect_,nearZ_,farZ_);
-	nearH_ = 2 * nearZ_* tanf(fovY*0.5);
-	farH_ = 2 * farZ_ *tanf(fovY*0.5);
+	VisualBody.frustum.nearZ = NearZ;
+	VisualBody.frustum.farZ = FarZ;
+	VisualBody.frustum.aspect = Aspect;
+	VisualBody.frustum.fovY = FovAngleY;
+	
+	VisualBody.frustum.nearH = 2 * NearZ* tanf(FovAngleY*0.5);
+	VisualBody.frustum.farH = 2 * FarZ *tanf(FovAngleY*0.5);
+	Proj_ = NtMatrixPerspective(FovAngleY, Aspect, NearZ, FarZ);
 
 }
-NtMatrix4x4 NtCamera::GetViewMatrix()
+
+void NtCamera::SetVisualBody(float Width, float Height, float NearZ, float FarZ)
+{
+	VisualBody.rectangle.Width = Width;
+	VisualBody.rectangle.Heiht = Height;
+	VisualBody.rectangle.Far = FarZ;
+	VisualBody.rectangle.Near = NearZ;
+	Proj_ = NtMatrixOrthogonal(Width, Height, NearZ, FarZ);
+}
+NtMatrix4x4 NtCamera::GetViewMatrix()const
 {
 	return View_;
 }
-NtMatrix4x4 NtCamera::GetProjMatrix()
+NtMatrix4x4 NtCamera::GetProjMatrix()const
 {
 	return Proj_;
 }

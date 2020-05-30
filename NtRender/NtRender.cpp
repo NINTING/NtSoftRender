@@ -29,8 +29,17 @@ void NtSofterRender::ClearPrimitive()
 	//VertexOuts.clear();
 
 }
+float* NtSofterRender::GetDepthBuffer()
+{
+	
+	return ZBuffer_;
+}
 
-
+void NtSofterRender::CleanBackAndDepthBuffer()
+{
+	CleanZBuffer();
+	BackBuffer_->CleanBuffer();
+}
 /*顶点变换*/
 void NtSofterRender::VertexProcessing()
 {
@@ -118,7 +127,7 @@ void NtSofterRender::Rasterization()
 				continue;
 			}
 		}
-		if (rs_ == RenderState::Wireframe)
+		if (rs_ == RenderState::Wireframe&&rt_==RenderTarget::BackBufferWrite)
 		{
 			Wirframe(Tri[0].get(), Tri[1].get(), Tri[2].get());
 			continue;
@@ -135,6 +144,7 @@ void NtSofterRender::Rasterization()
 	}
 	//printf("渲染完毕");
 }
+
 void NtSofterRender::Wirframe(const NtVertexOutBaseFormat* v0, const NtVertexOutBaseFormat* v1, const  NtVertexOutBaseFormat* v2)
 {
 	Line(v0, v1);
@@ -199,16 +209,24 @@ ptrBase Intersect(const ptrBase A,const ptrBase B, const NtVector4& face)
 
 	return A->LineInterpolation(B.get(), t);
 }
-bool AllInside(ptrBase Tri[])
+bool NtSofterRender::AllInside(ptrBase Tri[])
 {
 	for (int i = 0; i < 3; i++)
 	{
-		if (!(std::abs(Tri[i]->PosH.x()) <= abs(Tri[i]->PosH.w()) &&
-			std::abs(Tri[i]->PosH.y()) <= abs(Tri[i]->PosH.w()) &&
-			Tri[i]->PosH.z() < Tri[i]->PosH.w() && Tri[i]->PosH.z() > 1e-7))
+		if(rt_==OnlyDepthWtite)
 		{
-			return false;
+			if (!(std::abs(Tri[i]->PosH.x()) <= abs(Tri[i]->PosH.w()) &&
+				std::abs(Tri[i]->PosH.y()) <= abs(Tri[i]->PosH.w())))
+					return false;
+		}
+		else {
+			if (!(std::abs(Tri[i]->PosH.x()) <= abs(Tri[i]->PosH.w()) &&
+				std::abs(Tri[i]->PosH.y()) <= abs(Tri[i]->PosH.w()) &&
+				Tri[i]->PosH.z() < Tri[i]->PosH.w() && Tri[i]->PosH.z() > 1e-7))
+			{
+				return false;
 
+			}
 		}
 	}
 	return true;
@@ -221,6 +239,7 @@ void  NtSofterRender::HomogeneousCoordinateCropping(ptrBase  Tri[])
 			Primitive.push_back(std::vector<ptrBase>{Tri[0], Tri[1], Tri[2]});
 		return;
 	}
+	if (rt_ == RenderTarget::OnlyDepthWtite)return;
 	std::vector<ptrBase>out;
 	out.push_back(Tri[0]);
 	out.push_back(Tri[1]);
@@ -315,8 +334,6 @@ void NtSofterRender::BarycentricTriangle(const NtVertexOutBaseFormat* v0, const 
 	/*遍历像素*/
 	for (int y = ceilf(BoundBox[0].y()); y <= BoundBox[1].y(); y++)
 	{
-
-
 		for (int x = ceilf(BoundBox[0].x()); x <= BoundBox[1].x(); x++)
 		{
 
@@ -347,12 +364,15 @@ void NtSofterRender::BarycentricTriangle(const NtVertexOutBaseFormat* v0, const 
 void NtSofterRender::OutputMerge(int x, int y, float z, NtColor color)
 {
 	int w= BackBuffer_->GetWidth();
-
+	int index = x + y * w;
 	//z'=1/z z越小，z’越大
-	if (z > ZBuffer_[x+y* w])
+	if (z > ZBuffer_[index])
 	{
-		ZBuffer_[x + y * w] = z;
-		BackBuffer_->Set(x, y, color);
+		ZBuffer_[index] = z;
+		if (DepthBuffer_)DepthBuffer_[index] = color[0];
+		if(rt_==BackBufferWrite)
+			BackBuffer_->Set(x, y, color);
+		
 	}
 
 }

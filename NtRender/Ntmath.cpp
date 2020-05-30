@@ -16,6 +16,14 @@ NtMatrix NtMatrixLookAt(NtVector3&EyePosition, NtVector3& FoucusPosition,  NtVec
 		-(EyePosition*Right), -(EyePosition*Up), -(EyePosition*lookAt), 1);
 }
 */
+NtMatrix4x4 NtMatrixOrthogonal(float Width, float Height, float NearZ, float FarZ)
+{
+	float dz = FarZ - NearZ;
+	return NtMatrix4x4({ 2 / Width, 0, 0, 0,
+		0,  2 / Height, 0, 0,
+		0, 0, 1 / dz, 0,
+		0, 0, -	NearZ / dz, 1 });
+}
 NtMatrix4x4 NtMatrixPerspective(float FovAngleY, float Aspect, float NearZ, float FarZ)
 {
 	float OverTanFov = 1/tanf(FovAngleY*0.5);

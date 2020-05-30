@@ -68,7 +68,30 @@ private:
 };
 
 template<typename T, size_t n>
-class  NtVector :public NtVectorBase<T> {};
+class  NtVector :public NtVectorBase<T> {
+public:
+
+};
+template<typename T>
+class  NtVector<T, 1> :public NtVectorBase<T>
+{
+public:
+	NtVector(T X, T Y) :NtVectorBase<T>(1, raw) {
+		raw[0] = X; 
+	}
+	NtVector() :NtVectorBase<T>(1, raw) {}
+	void normalize() { NtVectorBase<T>::normalize(); }
+
+	NtVector(const NtVector &rhs) :NtVectorBase<T>(2, raw) { raw[0] = rhs.x();  }
+	NtVector& operator = (const NtVector&  rhs)
+	{
+		x(rhs.x());
+		return *this;
+	}
+	T x() const { return raw[0]; }	
+	void x(T x) { raw[0] = x; }
+	T raw[1] = { 0 };
+};
 
 template<typename T>
 class  NtVector<T, 2> :public NtVectorBase<T>
@@ -80,7 +103,7 @@ public:
 	NtVector() :NtVectorBase<T>(2,raw) {}
 	void normalize() { NtVectorBase<T>::normalize(); }
 
-	NtVector(const NtVector &rhs) :NtVectorBase<T>(2) { raw[0] = rhs.x();  raw[1] = rhs.y(); }
+	NtVector(const NtVector &rhs) :NtVectorBase<T>(2,raw) { raw[0] = rhs.x();  raw[1] = rhs.y(); }
 	NtVector& operator = (const NtVector&  rhs)
 	{
 		x(rhs.x());
@@ -303,7 +326,7 @@ NtVector<T, 3> Cross(const NtVector<T, 3>& lhs, const NtVector<T, 3>&  rhs)
 template<typename  T, std::size_t n, std::size_t m>
 NtVector<T, m>  operator * (const NtVector<T, n>& lhs, const NtMatrix<T, n,m>&  rhs)
 {
-	NtVector<T, len> ret;
+	NtVector<T, m> ret;
 	for (int i = 0; i < m; i++)
 	{
 		for (int j = 0; j < n; j++)
@@ -351,7 +374,7 @@ class NtMatrix
 public:
 	NtMatrix(std::initializer_list<NtVector<T, m>>vs)
 	{
-		auto it = v.begin();
+		auto it = vs.begin();
 		for (int i = 0; i < n; i++)
 			raw[i] = *(it + i);
 		
@@ -374,7 +397,7 @@ public:
 			}
 		}
 	}
-	NtVector<T, n>col(int c)
+	NtVector<T, n>col(int c)const
 	{
 		NtVector<T, n> ret;
 		for (int i = 0; i < n; i++)
@@ -402,16 +425,19 @@ public:
 	}
 
 	NtMatrix<T, n - 1, m - 1>get_minor(size_t r,size_t c)const //余子式  用于求行列式
-	{
+	{	
+
 		NtMatrix<T, n - 1, m - 1> ret;
-		for (int i = 0; i < m - 1; i++)
-			for (int j = 0; j < n - 1; j++)
+
+		for (int i = 0; i < n - 1; i++)
+			for (int j = 0; j < m - 1; j++)
 				ret[i][j] = raw[i < r ? i : i + 1][j < c ? j : j + 1];
 		return ret;
 	}
 	float cofactor(size_t r, size_t c)const//求代数余子式的行列式
 	{
-		return get_minor(0, i).det()*(i % 2 ? -1 : 1);
+
+		return get_minor(r, c).det()*((r+c) % 2 ? -1 : 1);
 	}
 
 	//不讲代数余子式转置，而是留到逆转置矩阵进行转置
@@ -422,6 +448,17 @@ public:
 			for (int j = 0; j < m; j++)
 				ret[i][j] = cofactor(i, j);
 		return ret;
+	}
+	float det()	const	//求行列式
+	{
+		
+
+		float ans = 0;
+		for (int i = 0; i < m; i++)
+		{
+			ans += raw[0][i] * cofactor(0, i);
+		}
+		return ans;
 	}
 	NtMatrix invert_transpose()const
 	{
@@ -437,21 +474,14 @@ public:
 		return invert_transpose().transpose();
 	}
 
-	float det()	const	//求行列式
-	{
-		float ans = 0;
-		for (int i = 0; i < n; i++)
-		{
-			ans += raw[0][i] * cofactor(0, i);
-		}
-	}
+	
 
 	NtMatrix<T,m,n> transpose()const
 	{
 		NtMatrix<T, m, n> ret;
 		for (int i = 0; i < m; i++)
 		{
-			ret[i] = col[i];
+			ret[i] = col(i);
 		}
 		return ret;
 	}
@@ -469,10 +499,28 @@ private:
 };
 
 
+template<typename T>
+class NtMatrix<T,1, 1>
+{
+public:
+	NtMatrix()
+	{
+		raw[0][0] = 1;
+	};
+	NtVector<T, 1> operator[](const size_t i) const { return raw[i]; }
+	NtVector<T, 1>& operator[](const size_t i) { return raw[i]; }
+	float det()	const	//求行列式
+	{
+		return raw[0][0];
+	}
+private:
+	NtVector<T, 1> raw[1];
+};
+
 template<typename  T, std::size_t row,size_t col0,size_t col1>
 NtMatrix<T, row,col1>  operator * (const NtMatrix<T, row,col0>& lhs, const NtMatrix<T, col0,col1>& rhs)
 {
-	NtMatrix<T, len>ret;
+	NtMatrix<T, row, col1>ret;
 	ret.zero();
 
 	for (int i = 0; i < row; i++) {
@@ -516,7 +564,7 @@ NtMatrix3x3 NtMatrixRotationAxis(const NtVector3&axis, float angle);
 NtMatrix4x4 NtMatrixPerspective(float FovAngleY, float Aspect, float NearZ, float FarZ);
 
 NtMatrix2x3 ComputerTangent(const NtMatrix2x2& TexCoordM, const NtMatrix2x3& SideM);
-
+NtMatrix4x4 NtMatrixOrthogonal(float Width, float Height, float NearZ, float FarZ);
 
 
 
