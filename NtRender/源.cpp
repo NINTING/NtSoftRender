@@ -14,18 +14,21 @@
 #include<windows.h>
 #include"ShaderAssemble.h"
 #include"ShadowMap.h"
+
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRender = NULL;
-SDL_Texture* gTexture = NULL;
+SDL_Texture* gTexture = NULL;	
 
-#define DegToRad(x) M_PI/180.0*(x)
+#define DegToRad(x) M_PI/180.0f*(x)
 const double MS_PER_FRAME = 1000.0/10;
 
-NtVector4 AmbientLight(0.2f, 0.2f, 0.2f,1.f);
-std::shared_ptr<Light> MainLight = CreateDirectionalLight(NtVector3(1.f, 1.f, 1.f), NtVector3(0.f, 0.f, -1.f));
+NtVector4 AmbientLight(1.0f, 1.0f, 1.0f,1.f);
+std::shared_ptr<Light> MainLight = CreateDirectionalLight(NtVector3(1.f, 1.f, 1.f), NtVector3(0.f,0.f, -1.f));
+
+
 
 /* Camera */
-NtVector3 Eye(0,0,1.5);	
+NtVector3 Eye(0,0,2.5);	
 NtVector3 Foucus(0,0,0);
 NtVector3 Up(0, 1, 0);
 NtCamera Camera;
@@ -33,31 +36,33 @@ NtCamera LightCamera;
 Model head,cube;
 
 int WindowWidth = 640;
-int WindowHeight = 480;
+int WindowHeight =480;
 
 std::shared_ptr<NtSofterRender> render = NtSofterRender::Instance(WindowWidth, WindowHeight);
-
+float AlphaScale = 1;
 
 std::shared_ptr<NtWindow> window = NtWindow::Instance(WindowWidth, WindowHeight);
 
 ShadowMap shadowmap(render.get(), WindowWidth, WindowHeight);
-void Present_image(NtImage*img);
+
 enum RenderEnum
 {
 	TPhone,
 	Phone,
-	STPhone
+	STPhone,
+	Blend,
+	SSAO
 }renderFlag ;
 void WindowInit()
 {
 	NtViewport vp;
-	vp.width = WindowWidth;
-	vp.height = WindowHeight;
-	vp.MinDepth = 0.001;
-	vp.MaxDepth = 1;
-	vp.TopLeftX = vp.TopLeftY = 0;
+	vp.width =(float) WindowWidth;
+	vp.height = (float)WindowHeight;
+	vp.MinDepth = 0.001f;
+	vp.MaxDepth = 1.f;
+	vp.TopLeftX = vp.TopLeftY = 0.f;
 	render->SetViewport(vp);
-	NtImage image = NtImage (window->GetWindowWidth(), window->GetWindowHeight(),4);
+	Tex2D_UC  image = Tex2D_UC(window->GetWindowWidth(), window->GetWindowHeight());
 	window->FillWindow(image);
 	window->PresentWindow();
 }
@@ -65,7 +70,7 @@ void WindowInit()
 
 void CubeAssemble()
 {
-
+	renderFlag = TPhone;
 	NtMatrix4x4 world = NtMatrix4x4();
 	if (renderFlag == STPhone) {
 		render->CleanBackAndDepthBuffer();
@@ -79,7 +84,12 @@ void CubeAssemble()
 	{
 		render->CleanBackAndDepthBuffer();
 		TPhoneAssemble(cube, Camera, render.get(), *MainLight.get(), AmbientLight);
+	}
+	else if (renderFlag = Blend)
+	{
 
+		render->CleanBackAndDepthBuffer();
+		BlendAssemble(cube, Camera, render.get(), *MainLight.get(), AmbientLight, AlphaScale);
 	}
 }
 
@@ -88,7 +98,7 @@ void CubeAssemble()
 
 void HeadPhoneAssemble()
 {
-
+	renderFlag = SSAO;
 	NtMatrix4x4 world = NtMatrix4x4();
 	if (renderFlag == STPhone) {
 		render->CleanBackAndDepthBuffer();
@@ -104,6 +114,11 @@ void HeadPhoneAssemble()
 		TPhoneAssemble(head, Camera, render.get(), *MainLight.get(), AmbientLight);
 
 	}
+	else if (renderFlag == SSAO)
+	{
+		render->CleanBackAndDepthBuffer();
+		SSAOAssemble(head, Camera, render.get(), *MainLight.get(), AmbientLight);
+	}
 
 }
 
@@ -115,29 +130,37 @@ void Assemble()
 	//CubeAssemble();
 }
 
-void Present_image(NtImage*img)
-{
-	window->FillWindow(*img);
-
-	window->PresentWindow();
-}
-
 void ModelInit()
 {
-	head.init("african_head.obj");
-	head.SetTexture("african_head_diffuse.tga");
-	head.SetNotmalTexture("african_head_nm.tga");
-	head.SetSpecularTexture("african_head_spec.tga");
-	Present_image(head.GetSpecularTex().get());
-	head.SetTangentTexture("african_head_nm_tangent.tga");
+	head.init("Asset\\african_head.obj");
+	 
 
+	head.SetMainTexture("Asset\\african_head_diffuse.tga");
+	head.GetDiffuseTex()->flip_vertically();
+	head.GetDiffuseTex()->flip_horizontally();
+	//Present_image(Float4ImageToRGBAImage(*head.GetDiffuseTex()));
+
+	//Present_image(NtUtility::Read_file("african_head_diffuse.tga"));
+	//head.SetNormalTexture("african_head_nm.tga");
+	//head.GetNormalTex()->flip_vertically();
+	//head.GetNormalTex()->flip_horizontally();
+	//Present_image(Float4ImageToRGBAImage(*head.GetNormalTex()));
+	head.SetSpecularTexture("Asset\\african_head_spec.tga");
+	//Present_image(Float4ImageToRGBAImage(*head.GetSpecularTex()));
+	head.GetSpecularTex()->flip_vertically();
+	head.GetSpecularTex()->flip_horizontally();
+
+	head.SetTangentTexture("Asset\\african_head_nm_tangent.tga");
+	head.GetTangentTex()->flip_vertically();
+	head.GetTangentTex()->flip_horizontally();
+	//Present_image(Float4ImageToRGBAImage(*head.GetTangentTex()));
 	Material HeadMat;
 	HeadMat.diffTextureId = 0;
 	HeadMat.Roughness = 0.5;
 	HeadMat.name = "Head";
 	HeadMat.MaterialId = 0;
 	head.SetMaterial(HeadMat);
-	cube.init("cube.obj");
+	cube.init("Asset\\cube.obj");
 	Material CubeMat;
 
 	CubeMat.name = "Cube";
@@ -145,14 +168,25 @@ void ModelInit()
 	cube.SetMaterial(CubeMat);
 }
 
+void SkyboxInit()
+{
+	Tex2D_UC PositiveX = NtUtility::Read_file("riverside_west.BMP");
+	Tex2D_UC NegativeX = NtUtility::Read_file("riverside_east.BMP");
+	Tex2D_UC PositiveY = NtUtility::Read_file("riverside_up.BMP");
+	Tex2D_UC NegativeY = NtUtility::Read_file("riverside_down.BMP");
+	Tex2D_UC PositiveZ = NtUtility::Read_file("riverside_north.BMP");
+	Tex2D_UC NegativeZ = NtUtility::Read_file("riverside_south.BMP");
+	
+}
+
 void ScenceInit()
 {
 	//MainLight->GetDirection()*-2.f
 	LightCamera.LookAt(-MainLight->GetDirection(), NtVector3(0, 0, 0), NtVector3(0, 1, 0));
 	//只需要将正交投影视景体覆盖整个场景即可
-	LightCamera.SetVisualBody(3,3,0.1,10);
+	LightCamera.SetVisualBody(3.f,3.f,0.1f,10.f);
 	Camera.LookAt(Eye, Foucus, Up);
-	Camera.SetViewFrustum(DegToRad(90), window->AspectRadio(), 0.1, 1000);
+	Camera.SetViewFrustum(DegToRad(90), window->AspectRadio(), 0.1f, 1000.f);	
 
 }
 
@@ -171,7 +205,7 @@ bool ProcessInput(float dt)
 {
 	SDL_Event event;
 	static bool isMouseLeftDown = false;
-	int lastX, lastY;
+///	int lastX, lastY;
 	while (SDL_PollEvent(&event)) {
 		//printf("%d\n", event.type);
 		// check for messages
@@ -189,21 +223,21 @@ bool ProcessInput(float dt)
 				case SDLK_ESCAPE:
 					return true;
 				case SDLK_w:
-					Camera.Walk(0.1);
+					Camera.Walk(0.1f);
 					break;
 				case SDLK_s:
 					{
-						Camera.Walk(-0.1);
+						Camera.Walk(-0.1f);
 						break;
 					}
 				case SDLK_a:
 					{
-						Camera.Strafe(-0.1);
+						Camera.Strafe(-0.1f);
 						break;
 					}
 				case SDLK_d:
 					{
-						Camera.Strafe(0.1);
+						Camera.Strafe(0.1f);
 						break;
 					}
 				case SDLK_v:
@@ -218,10 +252,10 @@ bool ProcessInput(float dt)
 					}
 				case SDLK_b:
 				{
-					if(render->GetBackCull())
-						render->SetBackCull(false);
+					if(render->GetCullState()==Cullback)
+						render->SetCullState(NoCull);
 					else
-						render->SetBackCull(true);
+						render->SetCullState(Cullback);
 					break;
 				}
 				case SDLK_z:
@@ -234,6 +268,18 @@ bool ProcessInput(float dt)
 					renderFlag = TPhone;
 					break;
 				}
+				case SDLK_n:
+				{
+					renderFlag = SSAO;
+					break;
+				}
+				case SDLK_UP:
+					AlphaScale = min(1, AlphaScale + 0.1f);
+					break;
+				case SDLK_DOWN:
+					AlphaScale = max(0, AlphaScale - 0.1f);
+					break;
+
 				default:
 					break;
 				}
@@ -244,8 +290,8 @@ bool ProcessInput(float dt)
 					int px = event.motion.xrel;
 					int py = event.motion.yrel;
 
-					Camera.Pitch(DegToRad(py*0.1));
-					Camera.RotateY(DegToRad(px*0.1));
+					Camera.Pitch(DegToRad(py*0.1f));
+					Camera.RotateY(DegToRad(px*0.1f));
 				}
 				break;
 			case SDL_MOUSEBUTTONDOWN:
@@ -279,11 +325,9 @@ void Rnder()
 	Assemble();
 	render->Draw();
 
-
-	window->FillWindow(render->Present());
+	window->Present_image(render->Present());
 	
-	window->PresentWindow();
-	
+	//printf("suc\n");
 }
 
 
@@ -291,15 +335,16 @@ int main(int argc, char*argv[])
 {
 	renderFlag = TPhone;
  	int frameCount = 0;
-	int acculateElapse = 0;
+	double acculateElapse = 0;
 	float fps = 0;
 	//image.FillImage(Red32);
-	SDL_Event event;
+
 	double lastTime = GetCurrentTime();
 	bool done = false;
 	WindowInit();
 	ScenceInit();
 	ModelInit();		
+
 	std::stringstream  ss;
 	while (true) {
 		double CurrTime = GetCurrentTime();
@@ -318,8 +363,6 @@ int main(int argc, char*argv[])
 		}
 		ElapseTime /= 1000;
 	//	printf("%lf\n", ElapseTime);
-		
-		
 		
 		if (ProcessInput(ElapseTime))break;;
 

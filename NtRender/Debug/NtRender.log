@@ -1,17 +1,9 @@
-﻿  NtEffect.cpp
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(168): warning C4305: “=”: 从“double”到“float”截断
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(170): warning C4305: “=”: 从“double”到“float”截断
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(172): warning C4305: “=”: 从“double”到“float”截断
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(542): warning C4244: “参数”: 从“T”转换到“unsigned char”，可能丢失数据
-          with
-          [
-              T=float
-          ]
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(608): warning C4244: “初始化”: 从“size_t”转换到“float”，可能丢失数据
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(620): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(621): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(622): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-c:\users\yt\source\repos\ntrender\ntrender\nteffect.cpp(623): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+﻿  源.cpp
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(176): warning C4305: “参数”: 从“double”到“float”截断
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(280): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(281): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(354): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+c:\users\yt\source\repos\ntrender\ntrender\源.cpp(357): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
 LINK : warning LNK4075: 忽略“/INCREMENTAL”(由于“/PROFILE”规范)
 Geometry.obj : warning LNK4075: 忽略“/EDITANDCONTINUE”(由于“/OPT:REF”规范)
   NtRender.vcxproj -> C:\Users\YT\source\repos\NtRender\Debug\NtRender.exe

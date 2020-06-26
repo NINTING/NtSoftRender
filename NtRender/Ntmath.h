@@ -24,7 +24,9 @@ class NtVectorBase
 {
 public:
 
-	T operator [](const size_t i )const { assert(i < size_); return pData[i]; }
+	T operator [](const size_t i )const { 
+		assert(i < size_); return pData[i]; 
+	}
 	T& operator [](const size_t i) { assert(i < size_); return pData[i]; }
 	void Print()const
 	{
@@ -54,7 +56,7 @@ protected:
 			sum += a*a;
 		}
 		sum = sqrt(sum);
-
+		if (sum == 0)return;
 		for (size_t i = 0; i < size_; i++)
 		{
 			this->operator[](i) /= sum;
@@ -70,14 +72,23 @@ private:
 template<typename T, size_t n>
 class  NtVector :public NtVectorBase<T> {
 public:
+	
 
 };
 template<typename T>
 class  NtVector<T, 1> :public NtVectorBase<T>
 {
 public:
-	NtVector(T X, T Y) :NtVectorBase<T>(1, raw) {
+	NtVector operator()(T i) 
+	{
+		return NtVector(i);
+	}
+
+	T operator()(NtVector i) { return raw[0]; }
+
+	NtVector(T X) :NtVectorBase<T>(1, raw) {
 		raw[0] = X; 
+
 	}
 	NtVector() :NtVectorBase<T>(1, raw) {}
 	void normalize() { NtVectorBase<T>::normalize(); }
@@ -97,7 +108,7 @@ template<typename T>
 class  NtVector<T, 2> :public NtVectorBase<T>
 {
 public:
-	NtVector(T X, T Y) :NtVectorBase<T>(2,raw) {
+	NtVector(T X, T Y = 0) :NtVectorBase<T>(2,raw) {
 		raw[0] = X;  raw[1] = Y;
 	}
 	NtVector() :NtVectorBase<T>(2,raw) {}
@@ -106,9 +117,9 @@ public:
 	NtVector(const NtVector &rhs) :NtVectorBase<T>(2,raw) { raw[0] = rhs.x();  raw[1] = rhs.y(); }
 	NtVector& operator = (const NtVector&  rhs)
 	{
-		x(rhs.x());
-		y(rhs.y());
-		
+		//x(rhs.x());
+		//y(rhs.y());
+		memcpy(raw, rhs.raw, 2 * sizeof(T));
 		return *this;
 	}
 	T x() const{ return raw[0]; }
@@ -122,7 +133,7 @@ template<typename T>
 class  NtVector<T, 3> :public NtVectorBase<T>
 {
 public:
-	NtVector(T X, T Y, T Z) :NtVectorBase<T>(3,raw) {
+	NtVector(T X, T Y = 0, T Z = 0) :NtVectorBase<T>(3,raw) {
 		raw[0] = X;  raw[1] = Y;; raw[2] = Z;
 	}
 	NtVector() :NtVectorBase<T>(3,raw) {}
@@ -131,10 +142,10 @@ public:
 	NtVector(const NtVector &rhs) :NtVectorBase<T>(3,raw) { raw[0] = rhs.x();  raw[1] = rhs.y(); raw[2] = rhs.z();}
 	NtVector& operator = (const NtVector&  rhs)
 	{
-		x(rhs.x());
-		y(rhs.y());
-		z(rhs.z());
-	
+		//x(rhs.x());
+		//y(rhs.y());
+		//z(rhs.z());
+		memcpy(raw, rhs.raw, 3* sizeof(T));
 		return *this;
 	}
 
@@ -152,19 +163,25 @@ class  NtVector<T, 4> :public NtVectorBase<T>
 {
 	
 public:
-	NtVector(T X, T Y, T Z, T W) :NtVectorBase<T>(4,raw) { raw[0] = X;  raw[1] = Y; raw[2] = Z; raw[3] = W; }
+	
+	NtVector(const NtVector<T, 3> &rhs , T w): NtVectorBase<T>(4, raw) {
+		raw[0] = rhs.x();  raw[1] = rhs.y(); raw[2] = rhs.z(); raw[3] = w;
+	}
+	NtVector(T X, T Y , T Z , T W ) :NtVectorBase<T>(4,raw) { raw[0] = X;  raw[1] = Y; raw[2] = Z; raw[3] = W; }
 	NtVector() :NtVectorBase<T>(4,raw) {}
 	NtVector(const NtVector &rhs) :NtVectorBase<T>(4,raw) { 
 		raw[0] = rhs.x();  raw[1] = rhs.y(); raw[2] = rhs.z(); raw[3] = rhs.w();
 	}
+
 	void normalize() { NtVectorBase<T>::normalize(); }
 	
 	NtVector& operator = (const NtVector&  rhs)
 	{
-		x (rhs.x());
-		y (rhs.y());
-		z (rhs.z());
-		w (rhs.w());
+	//	x (rhs.x());
+	//	y (rhs.y());
+	//	z (rhs.z());
+	//	w (rhs.w());
+		memcpy(raw, rhs.raw, 4*sizeof(T));
 		return *this;
 	}
 	void Perspective()
@@ -180,12 +197,21 @@ public:
 	T y()const { return raw[1];  }
 	T z() const { return raw[2]; }
 	T w() const { return raw[3]; }
+
+	T r() const { return raw[0]; }
+	T g()const { return raw[1]; }
+	T b() const { return raw[2]; }
+	T a() const { return raw[3]; }
 	void x(T x) { raw[0] = x; }
 	void y(T y) { raw[1] = y; }
 	void z(T z) { raw[2] = z; }
 	void w(T w) { raw[3] = w; }
-};
 
+	void r(T x) { raw[0] = x; }
+	void g(T y) { raw[1] = y; }
+	void b(T z) { raw[2] = z; }
+	void a(T w) { raw[3] = w; }
+};
 
 template<typename T, std::size_t len>
 NtVector<T, len>operator + (const NtVector<T, len>& lhs, const NtVector<T, len>&  rhs)
@@ -331,7 +357,10 @@ NtVector<T, m>  operator * (const NtVector<T, n>& lhs, const NtMatrix<T, n,m>&  
 	{
 		for (int j = 0; j < n; j++)
 		{
-			ret[i] += lhs[j] * rhs[j][i];
+			float a = lhs[j];
+			float b = rhs[j][i];
+			ret[i] += (lhs[j] * rhs[j][i]);
+
 		}
 	}
 	return ret;
@@ -361,6 +390,9 @@ void NtVectorTruncation(const NtVector<T, t>& rhs, NtVector<T, n>& out)
 		out[i] = rhs[i];
 	
 }
+
+
+
 /*
 ========================
 |	   NtMatrix        |
@@ -545,9 +577,12 @@ NtMatrix<T, row, col> operator /(const NtMatrix<T, row, col>& lhs, T rhs)
 }
 
 
+
+using  NtVector1 = NtVector<float, 1>;
 using  NtVector3 = NtVector<float, 3>;
 using  NtVector2 = NtVector<float, 2>;
 using  NtVector4 = NtVector<float, 4>;
+using  NtColor4 = NtVector<unsigned char, 4>;
 
 using  NtVector3i = NtVector<int, 3>;
 using  NtVector2i = NtVector<int, 2>;
@@ -566,6 +601,7 @@ NtMatrix4x4 NtMatrixPerspective(float FovAngleY, float Aspect, float NearZ, floa
 NtMatrix2x3 ComputerTangent(const NtMatrix2x2& TexCoordM, const NtMatrix2x3& SideM);
 NtMatrix4x4 NtMatrixOrthogonal(float Width, float Height, float NearZ, float FarZ);
 
+NtColor4 Uint32ToRGBA(Uint32 t);
 
 
 #endif // !NTCOLOR_H

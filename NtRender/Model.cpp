@@ -76,6 +76,9 @@ void Model::init(std::string fileName)
 				v0.TangentU = tagent[0];
 				v1.TangentU = tagent[0];
 				v2.TangentU = tagent[0];
+				v0.TangentU.normalize();
+				v1.TangentU.normalize();
+				v2.TangentU.normalize();
 			}
 		}
 	}
@@ -86,26 +89,36 @@ void Model::SetMaterial(const Material&mat)
 {
 	mat_ = mat;
 }
-void Model::SetTexture(const char*name)
+void Model::SetMainTexture(const char*name)
 {
-	diffuseTex = std::make_shared<NtImage>();
-	NtUtility::Read_Tga_file(name, diffuseTex.get());
+	//NtUtility::Read_file(name);
+	Tex2D_UC diffTex = NtUtility::Read_file(name);
+	diffuseTex = std::make_shared<Tex2D_4F>();
+
+	
+	*diffuseTex = RGBAImageToFloat4Image(diffTex);// (std::move());
+	
 }
 
-void Model::SetNotmalTexture(const char*name)
+void Model::SetNormalTexture(const char*name)
 {
-	normalTex = std::make_shared<NtImage>();
-	NtUtility::Read_Tga_file(name, normalTex.get());
+	Tex2D_UC norTex = NtUtility::Read_file(name);
+	normalTex = std::make_shared<Tex2D_4F>();
+	*normalTex = (std::move(RGBAImageToFloat4Image(norTex)));
 }
 void Model::SetSpecularTexture(const char*name)
 {
-	specularTex = std::make_shared<NtImage>();
-	NtUtility::Read_Tga_file(name, specularTex.get());
+	Tex2D_UC specuTex = NtUtility::Read_file(name);
+	specularTex = std::make_shared<Tex2D_4F>();
+	*specularTex = (std::move(RGBAImageToFloat4Image(specuTex)));
 }
 void Model::SetTangentTexture(const char*name)
 {
-	tangentTex = std::make_shared<NtImage>();
-	NtUtility::Read_Tga_file(name, tangentTex.get());
+	Tex2D_UC tanTex = NtUtility::Read_file(name);
+	tangentTex = std::make_shared<Tex2D_4F>();
+	*tangentTex = (std::move(RGBAImageToFloat4Image(tanTex)));
+
+
 }
 
 void Model::Assemble(NtSofterRender*render)

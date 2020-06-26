@@ -235,7 +235,7 @@ void NtWindow::init(int Width, int height)
 	gRender_ = SDL_CreateRenderer(gWindow_, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
 	//创建texture,注意像素格式和访问方式
-	gTexture_ = SDL_CreateTexture(gRender_, SDL_PIXELFORMAT_BGRA8888, SDL_TEXTUREACCESS_STREAMING, Width, height );
+	gTexture_ = SDL_CreateTexture(gRender_, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, Width, height );
 	
 	
 }
@@ -248,8 +248,9 @@ void NtWindow::PresentWindow()
 }
 
 
-void NtWindow::FillWindow(const NtImage &image)
+void NtWindow::FillWindow(const Tex2D_UC &image)
 {
+	
 	void* pix;
 	int pitch;
 	//SDL_PixelFormat* format;
@@ -257,13 +258,24 @@ void NtWindow::FillWindow(const NtImage &image)
 	//为了生成颜色,使用rgba8888的格式
 
 	
-	int size = GetWindowHeight()*GetWindowWidth();
-	//memcpy(pix, image.GetBuffer(), size*sizeof(Uint32));
-	
+	int size = image.GetWidth()*image.GetHeight();
+	memcpy(pix, image.GetBuffer(), size*sizeof(Uint32));
+	/*
+	int ww = GetWindowWidth();
+	int w = image.GetWidth();
+	int h = image.GetHeight();
+	for (int i = 0; i < h; i++)
+	{
+		for (int j = 0; j < w; j++)
+		{
 
-	for (int i = 0; i < size; i++)
-		((Uint32*)pix)[i] = image.GetRGBA32(i);
-
+			((Uint32*)pix)[j+i*ww] = RGBAToUint32(image.GetPixel(j,i));
+		}
+	}
+	//for (int i = 0; i < size; i++)
+		//memcpy((char*)pix+i*4, image.GetBuffer(i * 4),4 );
+		//((Uint32*)pix)[i] =RGBAToUint32(image.GetPixel(i));
+	*/
 	SDL_UnlockTexture(gTexture_);
 }
 
@@ -292,7 +304,12 @@ float  NtWindow::AspectRadio()
 	return float(w) / h;
 }
 
+void NtWindow::Present_image(const Tex2D_UC &img)
+{
+	this->FillWindow(img);
 
+	this->PresentWindow();
+}
 /*
 ========================
 |	NtSofterRender     |
@@ -311,10 +328,10 @@ NtMatrix4x4 NtMatrixViewport(const NtViewport&vp)
 	float halfH = vp.height*0.5;
 	ret[0][0] = halfW;
 	ret[1][1] = -halfH;
-	ret[2][2] = vp.MaxDepth - vp.MinDepth;
+	ret[2][2] = 1;//vp.MaxDepth - vp.MinDepth;
 	ret[3][0] = vp.TopLeftX + halfW;
 	ret[3][1] = vp.TopLeftY + halfH;
-	ret[3][2] = vp.MinDepth;
+	ret[3][2] = 0;//vp.MinDepth;
 	ret[3][3] = 1;
 	return ret;
 }

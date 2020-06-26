@@ -1,7 +1,10 @@
 #include"NtRender.h"
 #include"Nt.h"
 
-
+bool NtSofterRender::IsWireframe()
+{
+	return rs_ == RenderState::Wireframe;
+}
 
 
 
@@ -29,10 +32,14 @@ void NtSofterRender::ClearPrimitive()
 	//VertexOuts.clear();
 
 }
-float* NtSofterRender::GetDepthBuffer()
+Tex2D_1F* NtSofterRender::GetDepthBuffer()
 {
 	
 	return ZBuffer_;
+}
+Tex2D_4F* NtSofterRender::GetBackBuffer()
+{
+	return BackBuffer_;
 }
 
 void NtSofterRender::CleanBackAndDepthBuffer()
@@ -70,8 +77,6 @@ bool ClipSpaceCull(ptrBase tri[])
 
 void NtSofterRender::PrimitiveAssemblyAndClip()
 {
-
-	
 	size_t Vsize = VertexOuts.size();
 	size_t Isize = IndexBuffer_.size();
 	for (int i = 0; i < Isize; i++)
@@ -88,7 +93,6 @@ void NtSofterRender::PrimitiveAssemblyAndClip()
 			continue;
 		}
 		HomogeneousCoordinateCropping(tmp);
-		
 	}
 	VertexOuts.clear();
 }
@@ -114,20 +118,21 @@ void NtSofterRender::Rasterization()
 		//Tri[0]->PosH.Print();
 
 		Tri[0]->PosH = Tri[0]->PosH * vpM;
-		Tri[1]->PosH = Tri[1]->PosH *vpM;
-		Tri[2]->PosH = Tri[2]->PosH *vpM;
+		Tri[1]->PosH = Tri[1]->PosH * vpM;
+		Tri[2]->PosH = Tri[2]->PosH * vpM;
 		//为透视插值做准备
 		Tri[0]->PosH.w(1 / w0);
 		Tri[1]->PosH.w(1 / w1);
 		Tri[2]->PosH.w(1 / w2);
-		if (IsBackCull) {
+		if (CullState!=NoCull) 
+		{
 			NtVector3 normal = Cross(NtVector4To3(Tri[1]->PosH - Tri[0]->PosH), NtVector4To3(Tri[2]->PosH - Tri[0]->PosH));
 			//背面剔除  视角朝向为z轴，法向量z分量>0为背面
-			if (normal.z() <= -1e-6) {
+			if ((CullState == Cullback && normal.z() <= -1e-6)|| (CullState == CullFront&& normal.z() >= -1e-6)) {
 				continue;
 			}
 		}
-		if (rs_ == RenderState::Wireframe&&rt_==RenderTarget::BackBufferWrite)
+		if (rs_ == RenderState::Wireframe&&rt_&RenderTarget::BackBufferOn)
 		{
 			Wirframe(Tri[0].get(), Tri[1].get(), Tri[2].get());
 			continue;
@@ -169,10 +174,10 @@ void NtSofterRender::Draw()
 
 NtSofterRender::NtSofterRender(int w, int h)
 {
-	FrontBuffer_ = new NtImage(w, h,4);
-	BackBuffer_ = new NtImage(w, h,4);
-	ZBuffer_ = new float[w*h];
-	IsBackCull = true;
+	FrontBuffer_ = new Tex2D_4F(w, h);
+	BackBuffer_ = new Tex2D_4F(w, h);
+ 	ZBuffer_ = new Tex2D_1F(w, h, 1);
+	
 	//ZBuffer_->FillImage(2000);
 }
 
@@ -213,7 +218,7 @@ bool NtSofterRender::AllInside(ptrBase Tri[])
 {
 	for (int i = 0; i < 3; i++)
 	{
-		if(rt_==OnlyDepthWtite)
+		if(pm_==virsualbody)
 		{
 			if (!(std::abs(Tri[i]->PosH.x()) <= abs(Tri[i]->PosH.w()) &&
 				std::abs(Tri[i]->PosH.y()) <= abs(Tri[i]->PosH.w())))
@@ -239,7 +244,7 @@ void  NtSofterRender::HomogeneousCoordinateCropping(ptrBase  Tri[])
 			Primitive.push_back(std::vector<ptrBase>{Tri[0], Tri[1], Tri[2]});
 		return;
 	}
-	if (rt_ == RenderTarget::OnlyDepthWtite)return;
+	if (!(rt_ & BackBufferOn))return;
 	std::vector<ptrBase>out;
 	out.push_back(Tri[0]);
 	out.push_back(Tri[1]);
@@ -347,50 +352,111 @@ void NtSofterRender::BarycentricTriangle(const NtVertexOutBaseFormat* v0, const 
 			//VertexOut vo = PerspectiveCorrectionInterpolation(Tri, u);
 
 			pixelVertex->PosH.x(x), pixelVertex->PosH.y(y);
-
-			NtColor color = shader_->PixelShader(pixelVertex.get());
-
-			//printf("%d\n", color.GetColor32());
-
-			OutputMerge(x, y, pixelVertex->PosH.w(), color);
+		
+			NtVector4 color;
+			int w = BackBuffer_->GetWidth();
+			int index = x + y * w;
 
 
+			if (pixelVertex->PosH.z() < ZBuffer_->GetPixel(x,y)[0])
+			{
+				if (rt_ & BackBufferOn) {
+					 color = shader_->PixelShader(pixelVertex.get());
+				}
+				//printf("%d\n", color.GetColor32());
+
+				OutputMerge(x, y, pixelVertex->PosH.z(), color);
+
+			}
 		}
 
 	}
 
 }
 
-void NtSofterRender::OutputMerge(int x, int y, float z, NtColor color)
+NtVector4 NtSofterRender::Blend(const NtVector4& src,const NtVector4& dest)
+{
+	NtVector4 srcf, destf;
+	float srcA, destA;
+
+	switch (srcFactor)
+	{
+	case One:
+		srcf = NtVector4(1, 1, 1,1);
+		break;
+	case Zero:
+		srcf = NtVector4(0, 0, 0,0);
+		break;
+	case AlphaSrc:
+		float a = src[3];
+		srcf = NtVector4(a, a, a, a);
+		break;
+	}
+	switch (destFactor)
+	{
+	case One:
+		destf = NtVector4(1, 1, 1, 1);
+		break;
+	case Zero:
+		destf = NtVector4(0, 0, 0, 0);
+		break;
+	case OneMinusAlphaDest:
+		destf = NtVector4(1- srcf[3], 1 - srcf[3], 1 - srcf[3], 1 - srcf[3]);
+		break;
+	}
+	return ComponentMultiply(srcf , src) + ComponentMultiply(dest,destf);
+}
+
+void NtSofterRender::OutputMerge(int x, int y, float z, NtVector4 color)
 {
 	int w= BackBuffer_->GetWidth();
 	int index = x + y * w;
 	//z'=1/z z越小，z’越大
-	if (z > ZBuffer_[index])
-	{
-		ZBuffer_[index] = z;
-		if (DepthBuffer_)DepthBuffer_[index] = color[0];
-		if(rt_==BackBufferWrite)
-			BackBuffer_->Set(x, y, color);
-		
-	}
+	//if (z > ZBuffer_[index])
+	//{
+		if (rt_ & ZwriteOn) {
+			ZBuffer_->Set(x,y,z);
+
+			if (DepthBuffer_)
+				DepthBuffer_->Set(x, y, z);
+		}       
+	
+		if (rt_ & BackBufferOn) {
+			if (rt_ & BlendOn)
+			{
+				NtVector4 destP = BackBuffer_->GetPixel(x, y);
+				color = Blend(color,destP);
+			}
+			BackBuffer_->Set(x, y,color);
+		}
+	//}
 
 }
 
-NtImage NtSofterRender::Present()
+Tex2D_UC NtSofterRender::Present()
 {
 	std::swap(BackBuffer_, FrontBuffer_);
 	CleanZBuffer();
 	BackBuffer_->CleanBuffer();
-	return *FrontBuffer_;
+	return Float4ImageToRGBAImage(*FrontBuffer_);
 }
 
 void NtSofterRender::SetRenderState(RenderState rs)
 {
 	rs_ = rs;
 }
-
-
+void NtSofterRender::SetRenderTarget(RenderTarget target)
+{ 
+	if (target & 0x10000)
+		rt_&=target;
+	else
+		rt_ |= target;
+}
+void NtSofterRender::SetBlendFactor(BlendFactor src, BlendFactor dest)
+{
+	srcFactor = src;
+	destFactor = dest;
+}
 void NtSofterRender::Line(const NtVertexOutBaseFormat* v0, const  NtVertexOutBaseFormat* v1)
 {
 	int x0 = v0->PosH.x(), y0 = v0->PosH.y(), x1 = v1->PosH.x(), y1 = v1->PosH.y();
@@ -421,14 +487,32 @@ void NtSofterRender::Line(const NtVertexOutBaseFormat* v0, const  NtVertexOutBas
 	for (int x = x0; x <= x1; x++)
 	{
 		if (steel)
-			BackBuffer_->Set(y, x, White32);
+			BackBuffer_->Set(y, x, WhiteF4);
 		else
-			BackBuffer_->Set(x, y, White32);
+			BackBuffer_->Set(x, y, WhiteF4);
 		error += k;
 		if (error > dx)
 		{
 			y += y1 > y0 ? 1 : -1;
 			error -= 2 * dx;
 		}
+	}
+}
+
+
+void NtSofterRender::SetRTT(Tex2D_4F*target)
+{
+	tmpBackBuffer_ = BackBuffer_;
+	BackBuffer_ = target;
+	Viewport_.width = target->GetWidth();
+	Viewport_.height = target->GetHeight();
+}
+void NtSofterRender::ResetRTT()
+{
+	if (tmpBackBuffer_) {
+		BackBuffer_ = tmpBackBuffer_;
+		tmpBackBuffer_ = nullptr;
+		Viewport_.width = BackBuffer_->GetWidth();
+		Viewport_.height = BackBuffer_->GetHeight();
 	}
 }

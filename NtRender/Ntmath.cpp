@@ -59,3 +59,12 @@ NtMatrix2x3 ComputerTangent(const NtMatrix2x2& TexCoordM, const NtMatrix2x3& Sid
 	NtMatrix2x2 invertM = TexCoordM.invert();
 	return invertM * SideM;
 }
+
+
+NtColor4 Uint32ToRGBA(Uint32 t)
+{
+	NtColor4 ret;
+	memcpy(ret.raw,&t,4 );
+	return ret;
+}
+

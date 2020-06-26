@@ -76,12 +76,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\YT\source\repos\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\YT\source\repos\SDL2-2.0.12\include;C:\Users\YT\source\repos\SDL2_image-2.0.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Users\YT\source\repos\SDL2-2.0.12\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\YT\source\repos\SDL2-2.0.12\lib\x86;C:\Users\YT\source\repos\SDL2_image-2.0.5\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <EntryPointSymbol>
       </EntryPointSymbol>
@@ -135,7 +136,11 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Nt.cpp" />
     <ClCompile Include="NtRender.cpp" />
-    <ClCompile Include="NtUtility.cpp" />
+    <ClCompile Include="NtShader.cpp" />
+    <ClCompile Include="NtUtility.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
+    </ClCompile>
     <ClCompile Include="NtEffect.cpp" />
     <ClCompile Include="ShaderAssemble.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
@@ -147,6 +152,7 @@
     <ClInclude Include="Effect.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="LightHelper.h" />
+    <ClInclude Include="NtCube.h" />
     <ClInclude Include="Ntmath.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Nt.h" />

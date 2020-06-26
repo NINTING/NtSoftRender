@@ -26,6 +26,7 @@ class NtVertex
 {
 public:
 	NtVertex() {};
+	
 	NtVertex(NtVector3 Position, NtVector3 Diffuse = NtVector3(), NtVector3 Normal = NtVector3())
 		:Position(Position), Diffuse(Diffuse), Normal(Normal) {}
 	NtVector3 GetPostion()const { return Position; }
@@ -69,8 +70,10 @@ public:
 
 	void init(int Width, int height);
 	void PresentWindow();
-	void FillWindow(const NtImage&image);
+	void Present_image(const Tex2D_UC &img);
 
+	void FillWindow(const Tex2D_UC&image);
+	SDL_Renderer* GetSDL_Render() { return gRender_; }
 	int GetWindowWidth();
 	int GetWindowHeight();
 	void SetTitle(const char* s)

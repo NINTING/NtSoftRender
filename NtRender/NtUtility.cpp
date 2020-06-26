@@ -1,4 +1,26 @@
 #include"NtUtility.h"
+#include <ctime>
+
+#include <cstdlib>
+
+
+
+void UtilityInit()
+{
+	// load support for the JPG and PNG image formats
+	int flags = IMG_INIT_JPG | IMG_INIT_PNG ;
+	int initted = IMG_Init(flags);
+	if ((initted&flags) != flags) {
+		printf("IMG_Init: Failed to init required jpg and png support!\n");
+		printf("IMG_Init: %s\n", IMG_GetError());
+		// handle error
+	}
+}
+
+
+
+
+
 
 #pragma pack(push,1)
 struct TGA_Header {
@@ -17,7 +39,7 @@ struct TGA_Header {
 };
 #pragma pack(pop)
 
-bool NtUtility::load_rle_data(std::ifstream &in, NtImage*img) {
+bool NtUtility::load_rle_data(std::ifstream &in, Tex2D_UC *img) {
 
 	unsigned long pixelcount = img->GetWidth()*img->GetHeight();
 	
@@ -93,7 +115,97 @@ bool NtUtility::load_rle_data(std::ifstream &in, NtImage*img) {
 	return true;
 }
 
-bool NtUtility::Read_Tga_file(std::string filename, NtImage*img)
+Tex2D_UC NtUtility::Read_file(const std::string& filename)
+{
+	// load sample.tga into image
+	SDL_Surface *image;
+	//SDL_RWops *rwop;
+	//rwop = SDL_RWFromFile(filename.c_str(), "rb");
+	image = IMG_Load(filename.c_str());
+	
+	Tex2D_UC ret;
+	
+	if (!image) {
+		printf("IMG_LoadTGA_RW: %s\n", IMG_GetError());
+		// handle error
+	}
+	else {
+		int bpp = image->format->BytesPerPixel;
+		size_t size = image->w*image->h*bpp;
+		SDL_PixelFormat * fmt = image->format;
+		ret = Tex2D_UC(image->w, image->h);
+		Uint8* s = (Uint8*)image->pixels;
+		unsigned char* dest = ret.GetBuffer();
+		//for (int i = 0, p = 0; i < size; i += bpp, p += 4)
+		//{
+			//memcpy(dest + p, s + i, bpp);
+		//}
+		
+		if (fmt->palette != nullptr)
+		{
+			for (int i = 0, p = 0; i < size; i += bpp, p += 4)
+			{
+				int index = ((Uint8 *)image->pixels)[i];
+				SDL_Color color = fmt->palette->colors[index];
+				
+			}
+		}
+		else {
+			SDL_LockSurface(image);
+
+			for (int i = 0, p = 0; i < size; i += bpp, p += 4)
+			{
+
+
+				Uint32* np = (Uint32*)(s + i);
+				Uint32 pixel = *np, temp;
+				
+
+				Uint8 r, g, b, a;
+				SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+				ret.Set(p, r);
+				ret.Set(p + 1, g);
+				ret.Set(p + 2, b);
+				ret.Set(p + 3, a);
+
+			}
+			SDL_UnlockSurface(image);
+		}
+		
+		/*
+		Uint32* s = (Uint32*)image->pixels;
+		SDL_LockSurface(image);
+		for (int i = 0, p = 0; i < image->w*image->h; i ++, p += 4)
+		{
+			SDL_PixelFormat * fmt = image->format;
+
+			//Uint32* np = s[i];
+			Uint32 pixel = s[i], temp;
+			Uint8 r, g, b, a;
+			SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+			ret.Set(p, r);
+			ret.Set(p + 1, g);
+			ret.Set(p + 2, b);
+			ret.Set(p + 3, a);
+
+		}
+		SDL_UnlockSurface(image);
+		return ret;
+		
+*/
+	}
+	return ret;
+}
+
+bool NtUtility::Read_Tga_file(std::string filename,Tex2D_4F* ret)
+{
+	Tex2D_UC tmp;
+	Read_Tga_file(filename, &tmp);
+	*ret = RGBAImageToFloat4Image(tmp);
+	return true;
+}
+
+bool NtUtility::Read_Tga_file(std::string filename, Tex2D_UC*img)
 {
 	{
 		img->CleanBuffer();
@@ -114,10 +226,11 @@ bool NtUtility::Read_Tga_file(std::string filename, NtImage*img)
 			std::cerr << "an error occured while reading the header\n";
 			return false;
 		}
+
 		img->SetWidth(header.width);
 		img->SetHeight(header.height);
-		img->SetBytesPerPixel(header.bitsperpixel >> 3);
-		int bytespp = img->GetBytesPerPixel();
+		//img->SetBytesPerPixel(header.bitsperpixel >> 3);
+		int bytespp = header.bitsperpixel>>3;
 		int width = img->GetWidth();
 		int height = img->GetHeight();
 		unsigned long nbytes = bytespp * width*height;
@@ -163,4 +276,63 @@ bool NtUtility::Read_Tga_file(std::string filename, NtImage*img)
 		return true;
 
 	}
+}
+
+NtVector4 NtUtility::RandomVec()
+{
+	srand((int)time(0));
+	return NtVector4(rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX));
+}
+float NtUtility::RandomF(float l, float r)
+{
+	srand((int)time(0));
+	return (rand() / double(RAND_MAX)*(r - l) + l);
+}
+
+void NtUtility::RandomOffsetVec(NtVector4*offset)
+{
+	offset[0] = NtVector4(1.f,1.f,1.f,0.f);
+	offset[1] = NtVector4(-1.f, -1.f, -1.f, 0.f);
+
+	offset[2] = NtVector4(-1.f, 1.f, 1.f, 0.f);
+	offset[3] = NtVector4(1.f, -1.f, -1.f, 0.f);
+
+	offset[4] = NtVector4(1.f, 1.f, -1.f, 0.f);
+	offset[5] = NtVector4(-1.f, -1.f, 1.f, 0.f);
+
+	offset[6] = NtVector4(-1.f, 1.f, -1.f, 0.f);
+	offset[7] = NtVector4(1.f, -1.f, 1.f, 0.f);
+
+	offset[8] = NtVector4(-1.f, 0.f, 0.f, 0.f);
+	offset[9] = NtVector4(1.f, 1.f, 1.f, 0.f);
+
+	offset[10] = NtVector4(0.f, 1.f, 0.f, 0.f);
+	offset[11] = NtVector4(0.f, 1.f, 0.f, 0.f);
+
+	offset[12] = NtVector4(0.f, 0.f, -1.f, 0.f);
+	offset[13] = NtVector4(0.f, 0.f, 1.f, 0.f);
+	for (int i = 0; i < 14; i++)
+	{
+		float s = RandomF(0.25, 1.f);
+		 offset[i].normalize();
+		offset[i] *= s;
+	}
+
+
+}
+void NtUtility::RandomNormalImage(int w, int h,Tex2D_3F**out)
+{
+	if (*out != nullptr)
+		delete []*out;
+	*out = new Tex2D_3F(w,h);
+	for (int j = 0; j <h; j++) {
+		for (int i = 0; i < w; i++)
+		{
+			NtVector3 tmp = NtVector4To3(NtUtility::RandomVec());
+			tmp.normalize();
+			(*out)->Set(i, j, tmp);
+		}
+	}
+
+
 }

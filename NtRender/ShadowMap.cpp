@@ -12,12 +12,12 @@ ShadowMap::ShadowMap(NtSofterRender*render, int w, int h)
 	
 
 }	
-std::shared_ptr<NtImage> ShadowMap::BuildDepthMap(const NtMatrix4x4&w, const Model&model)
+std::shared_ptr<Tex2D_1F> ShadowMap::BuildDepthMap(const NtMatrix4x4&w, const Model&model)
 {
-	float* DepthMap = new float[Width_*Height_];
+	DepthMap_ = std::make_shared<Tex2D_1F>(Width_,Height_,1.f);
 
-	std::fill(DepthMap,DepthMap+(Width_*Height_),255);
-	render_->SetRenderTarget(RenderTarget::OnlyDepthWtite);
+	//std::fill(DepthMap_.get(),DepthMap_.get()+(Width_*Height_),1.f);
+	render_->SetRenderTarget(RenderTarget::BackBufferOff);
 
 //	std::shared_ptr<ShadowShader>shadowshader = std::make_shared<ShadowShader>();
 	ShadowShader* shadowshader = new ShadowShader();
@@ -28,20 +28,12 @@ std::shared_ptr<NtImage> ShadowMap::BuildDepthMap(const NtMatrix4x4&w, const Mod
 	render_->SetShader(shadowshader);
 	render_->SetVertexBuffer(model.GetVertexsBuffer());
 	render_->SetIndexBuffer(model.GetIndicesBuffer());
-	render_->SetDepthBuffer(DepthMap);
+	render_->SetDepthBuffer(DepthMap_.get());
 	render_->Draw();
 
 	render_->SetDepthBuffer(nullptr);
-	NtColor depthC;
-	DepthMap_ = std::make_shared<NtImage>(Width_, Height_, 1);
-	int size = Width_ * Height_;
-	for (int i = 0; i < size; i++)
-	{
+
 	
-		depthC.R_ = DepthMap[i];	//zBuffer记录了1/z的深度需要计算为1/z*255==255/z;
-		DepthMap_->Set(i, depthC);
-	}
-	delete[] DepthMap;
 	return DepthMap_;
 }
 	
