@@ -68,3 +68,11 @@ NtColor4 Uint32ToRGBA(Uint32 t)
 	return ret;
 }
 
+NtMatrix4x4 Transiation(float x, float y, float z)
+{
+	NtMatrix4x4 ret;
+	ret[3][0] = x;
+	ret[3][1] = y;
+	ret[3][2] = z;
+	return ret;
+}

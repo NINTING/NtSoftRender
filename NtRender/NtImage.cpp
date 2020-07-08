@@ -7,12 +7,15 @@
 ========================
 */
 Tex2D_4F White2D = Tex2D_4F(1, 1, 1);
+Tex2D_4F Black2D = Tex2D_4F(0, 0, 0);
 Tex2D_4F Bump2D = Tex2D_4F(1, 1, NtVector4(0.5f,0.5,1.f,1));
 NtColor NtColor::White = NtColor(0xffffff00);
 NtColor NtColor::Black = NtColor(0x00000000);
 NtColor NtColor::Blue = NtColor(0x0000ff00);
 NtColor NtColor::Green = NtColor(0x00ff0000);
 NtColor NtColor::Red = NtColor(0xff000000);
+
+
 
 NtColor NtColor::operator = (NtVector<unsigned char, 4>&rhs)
 {
@@ -96,6 +99,8 @@ Tex2D_4F RGBAImageToFloat4Image(const Tex2D_UC&rhs)
 	}
 	return ret;
 }
+
+
 Tex2D_UC Float4ImageToRGBAImage(const Tex2D_4F&rhs)
 {
 	size_t size = rhs.GetImageSize();

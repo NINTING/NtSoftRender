@@ -64,7 +64,7 @@ void NtGroudVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseFormat
 	cVFptr tmpC = dynamic_cast<cVFptr>(C);
 	
 	
-	this->PosW = tmpA->PosW* a + tmpB->PosW*b + tmpC->PosW*c;
+	
 	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
 	this->PosH.z(1 / z3);
 	this->PosH.w(z3);
@@ -73,7 +73,7 @@ void NtGroudVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseFormat
 	float t2 = this->PosH.z()*tmpC->PosH.w() * c;
 
 	this->Color = tmpA->Color *t0 + tmpB->Color * t1 + tmpC->Color * t2;
-
+	this->PosW = tmpA->PosW* t0 + tmpB->PosW*t1 + tmpC->PosW*t2;
 }
 
  
@@ -141,7 +141,7 @@ void NtCGroudVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseForma
 	cVFptr tmpC = dynamic_cast<cVFptr>(C);
 
 
-	this->PosW = tmpA->PosW* a + tmpB->PosW*b + tmpC->PosW*c;
+	
 	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
 	this->PosH.z(1 / z3);
 	this->PosH.w(z3);
@@ -151,6 +151,7 @@ void NtCGroudVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseForma
 
 	this->intensity = tmpA->intensity *t0 + tmpB->intensity * t1 + tmpC->intensity * t2;
 	this->PosH.z((tmpA->PosH.z() * a + tmpB->PosH.z()*b + tmpC->PosH.z()* c));
+	this->PosW = tmpA->PosW* t0 + tmpB->PosW*t1 + tmpC->PosW*t2;
 }
 
 
@@ -235,7 +236,7 @@ void NtTGroudVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseForma
 	cVFptr tmpC = dynamic_cast<cVFptr>(C);
 
 
-	this->PosW = tmpA->PosW* a + tmpB->PosW*b + tmpC->PosW*c;
+
 	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
 	this->PosH.z(1 / z3);
 	this->PosH.w(z3);
@@ -246,6 +247,7 @@ void NtTGroudVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseForma
 	this->texCoor[0] = tmpA->texCoor[0] *t0 + tmpB->texCoor[0] * t1 + tmpC->texCoor[0] * t2;
 	this->texCoor[1] = tmpA->texCoor[1] * t0 + tmpB->texCoor[1] * t1 + tmpC->texCoor[1] * t2;
 	this->PosH.z((tmpA->PosH.z() * a + tmpB->PosH.z()*b + tmpC->PosH.z()* c));
+	this->PosW = tmpA->PosW* t0 + tmpB->PosW*t1 + tmpC->PosW*t2;
 }
 
 
@@ -323,7 +325,7 @@ void NtPhoneVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseFormat
 	cVFptr tmpC = dynamic_cast<cVFptr>(C);
 
 
-	this->PosW = tmpA->PosW* a + tmpB->PosW*b + tmpC->PosW * c;
+
 	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
 	this->PosH.z(1 / z3);
 	this->PosH.w(z3);
@@ -334,6 +336,7 @@ void NtPhoneVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseFormat
 	this->texCoor[0] = tmpA->texCoor[0] * t0 + tmpB->texCoor[0] * t1 + tmpC->texCoor[0] * t2;
 	this->texCoor[1] = tmpA->texCoor[1] * t0 + tmpB->texCoor[1] * t1 + tmpC->texCoor[1] * t2;
 	this->PosH.z((tmpA->PosH.z() * a + tmpB->PosH.z()*b + tmpC->PosH.z()* c));
+	this->PosW = tmpA->PosW* t0 + tmpB->PosW*t1 + tmpC->PosW*t2;
 }
 
 
@@ -377,7 +380,8 @@ NtVector4 PhoneShader::PixelShader(const NtVertexOutBaseFormat* pin)
 	normal.normalize();
 	//计算光照
 	NtVector4 Light = ComputeLight(DirectionalLights, in->PosW, normal, ToEye, Pmat);
-	NtVector4 Colorf = Light + AmbientLit;
+	NtVector4 emission = pointTex2D(emissionTex.get(), in->texCoor);
+	NtVector4 Colorf = emission + Light + AmbientLit;
 	
 
 	return Colorf;
@@ -452,7 +456,7 @@ void NtTPhoneVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseForma
 	this->texCoor[1] = tmpA->texCoor[1] * t0 + tmpB->texCoor[1] * t1 + tmpC->texCoor[1] * t2;
 	this->TangentW = tmpA->TangentW *t0 + tmpB->TangentW * t1 + tmpC->TangentW * t2;
 	this->PosH.z((tmpA->PosH.z() * a + tmpB->PosH.z()*b + tmpC->PosH.z()* c));
-	this->PosH = tmpA->PosH * a + tmpB->PosH*b + tmpC->PosH* c;
+
 }
 
 
@@ -546,8 +550,11 @@ void NtShadowVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseForma
 	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
 	this->PosH.z(1 / z3);
 	this->PosH.w(z3);
-	
-
+	float t0 = this->PosH.z()*tmpA->PosH.w() * a;
+	float t1 = this->PosH.z()*tmpB->PosH.w() * b;
+	float t2 = this->PosH.z()*tmpC->PosH.w() * c;
+	this->PosH.z((tmpA->PosH.z() * a + tmpB->PosH.z()*b + tmpC->PosH.z()* c));
+	this->PosW = tmpA->PosW* a + tmpB->PosW*b + tmpC->PosW*c;
 	//this->PosH.z( tmpA->PosH.z() * a + tmpB->PosH.z()*b + tmpC->PosH.z()*c);
 	//this->PosH.w(1.f/this->PosH.z());
 }
@@ -563,7 +570,7 @@ ptrBase ShadowShader::VertexShader(const NtVertex& vertex)
 	ret->PosH = NtVector3To4(ret->PosW, (float)1.0);
 	
 	ret->PosH = ret->PosH *  w;
-	NtVectorTruncation(ret->PosH, ret->PosW);
+	//NtVectorTruncation(ret->PosH, ret->PosW);
 	ret->PosH = ret->PosH * v * p;
 	return ret;
 }
@@ -623,21 +630,21 @@ void NtSTPhoneVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseForm
 	cVFptr tmpC = dynamic_cast<cVFptr>(C);
 
 
-	this->PosW = tmpA->PosW* a + tmpB->PosW*b + tmpC->PosW * c;
+
 	
 	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
 	this->PosH.z(1 / z3);
 	float t0 = this->PosH.z()*tmpA->PosH.w() * a;
 	float t1 = this->PosH.z()*tmpB->PosH.w() * b;
 	float t2 = this->PosH.z()*tmpC->PosH.w() * c;
-
+	this->PosW = tmpA->PosW* t0 + tmpB->PosW*t1 + tmpC->PosW*t2;
 	this->Normal = tmpA->Normal *t0 + tmpB->Normal * t1 + tmpC->Normal * t2;
 	this->texCoor[0] = tmpA->texCoor[0] * t0 + tmpB->texCoor[0] * t1 + tmpC->texCoor[0] * t2;
 	this->texCoor[1] = tmpA->texCoor[1] * t0 + tmpB->texCoor[1] * t1 + tmpC->texCoor[1] * t2;
 	this->TangentW = tmpA->TangentW *t0 + tmpB->TangentW * t1 + tmpC->TangentW *t2;
 	this->BitTangentW = tmpA->BitTangentW *t0 + tmpB->BitTangentW * t1 + tmpC->BitTangentW *t2;
 	this->ShadowTexH = tmpA->ShadowTexH *t0 + tmpB->ShadowTexH * t1 + tmpC->ShadowTexH *t2;
-	this->PosH.z(this->PosH.z() * (tmpA->PosH.z() * a + tmpB->PosH.z()*b + tmpC->PosH.z()* c));
+	this->PosH.z((tmpA->PosH.z() * a + tmpB->PosH.z()*b + tmpC->PosH.z()* c));
 }
 
 
@@ -649,13 +656,13 @@ float ComputerShadowFactor(NtVector4 TexPosH, std::shared_ptr<Tex2D_1F> ShadowTe
 	TexPosH.Perspective();
 	float dp = TexPosH.z();
 	float dx = 1.f / ShadowTex->GetWidth();
-	
+
 	//PCF
 	const float offset[4][2] = { {0,0},{dx,0},{0,dx},{dx,dx} };
-	float s0 = pointTex2D(ShadowTex.get(),NtVector2(TexPosH.x() + offset[0][0], TexPosH.y() + offset[0][1]))[0];
-	float s1 = pointTex2D(ShadowTex.get(), NtVector2(TexPosH.x() + offset[1][0], TexPosH.y() + offset[1][1]))[0];
-	float s2 = pointTex2D(ShadowTex.get(), NtVector2(TexPosH.x() + offset[2][0], TexPosH.y() + offset[2][1]))[0];
-	float s3 = pointTex2D(ShadowTex.get(), NtVector2(TexPosH.x() + offset[3][0], TexPosH.y() + offset[3][1]))[0];
+	float s0 = pointTex2D(ShadowTex.get(),NtVector2(TexPosH.x() + offset[0][0], TexPosH.y() + offset[0][1]))[0]+0.003;
+	float s1 = pointTex2D(ShadowTex.get(), NtVector2(TexPosH.x() + offset[1][0], TexPosH.y() + offset[1][1]))[0]+0.003;
+	float s2 = pointTex2D(ShadowTex.get(), NtVector2(TexPosH.x() + offset[2][0], TexPosH.y() + offset[2][1]))[0]+0.003;
+	float s3 = pointTex2D(ShadowTex.get(), NtVector2(TexPosH.x() + offset[3][0], TexPosH.y() + offset[3][1]))[0]+0.003;
 	
 	//判断是否在阴影中
 	float r0 = int(s0 >= dp);
@@ -679,6 +686,8 @@ ptrBase STPhoneShader::VertexShader(const NtVertex& vertex)
 	ret->PosH = ret->PosH *  w;
 	
 	ret->ShadowTexH = ret->PosH * vpt;
+
+
 
 	ret->PosH = ret->PosH  * v * p;
 
@@ -731,7 +740,7 @@ NtVector4 STPhoneShader::PixelShader(const NtVertexOutBaseFormat* pin)
 	if (tangentTex) {
 		NtVector3 tangentN =Normal(NtVector4To3(pointTex2D( tangentTex.get(),in->texCoor)));
 
-		normal = TangentToNormalW(tangentN, in->TangentW, in->Normal,in->BitTangentW);
+		normal = TangentToNormalW(tangentN, in->TangentW, in->Normal);
 	}
 	else
 		normal = in->Normal;
@@ -739,14 +748,15 @@ NtVector4 STPhoneShader::PixelShader(const NtVertexOutBaseFormat* pin)
 
 	//计算阴影//
 	float shadowfactor = ComputerShadowFactor(in->ShadowTexH, ShadowTex);
-
+	if (shadowfactor > 1)
+		printf("dasd");
 	//计算光照
 	NtVector4 Light = ComputeLight(DirectionalLights, in->PosW, normal, ToEye, Pmat, shadowfactor);
 	NtVector4 Colorf = Light + AmbientLit;
 
 	
-
-	return Colorf;
+	
+	return saturate(Colorf);
 }
 
 
@@ -791,17 +801,18 @@ void BlendVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseFormat* 
 	cVFptr tmpC = dynamic_cast<cVFptr>(C);
 
 
-	this->PosW = tmpA->PosW* a + tmpB->PosW*b + tmpC->PosW*c;
+	
 	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
 	this->PosH.z(1 / z3);
 	this->PosH.w(z3);
 	float t0 = this->PosH.z()*tmpA->PosH.w() * a;
 	float t1 = this->PosH.z()*tmpB->PosH.w() * b;
 	float t2 = this->PosH.z()*tmpC->PosH.w() * c;
-
+	this->PosW = tmpA->PosW* t0 + tmpB->PosW*t1 + tmpC->PosW*t2;
 	this->texCoor[0] = tmpA->texCoor[0] * t0 + tmpB->texCoor[0] * t1 + tmpC->texCoor[0] * t2;
 	this->texCoor[1] = tmpA->texCoor[1] * t0 + tmpB->texCoor[1] * t1 + tmpC->texCoor[1] * t2;
 	this->NormalW = tmpA->NormalW * t0 + tmpB->NormalW * t1 + tmpC->NormalW * t2;
+	this->PosH =tmpA->PosH * a + tmpB->PosH *b + tmpC->PosH* c;
 }
 
 
@@ -831,9 +842,13 @@ NtVector4 BlendShader::PixelShader(const NtVertexOutBaseFormat* pin)
 	
 	NtVector4 color;
 	color = diffuse->GetPixel(tmp->texCoor[0], tmp->texCoor[1]);
-	color *= (tmp->NormalW*Light_dir);
-	color += Ambient;
 	
+	color.xyz(color.xyz() * saturate((tmp->NormalW * Light_dir)));
+	
+	color += Ambient;
+	color = saturate(color);
+	if (color.x() < 0)
+		printf("ds");
 	color.a(color.a() * BlendScale);
 	
 	return color;
@@ -879,7 +894,7 @@ void WriteNormalVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseFo
 	cVFptr tmpC = dynamic_cast<cVFptr>(C);
 
 
-	this->PosW = tmpA->PosW* a + tmpB->PosW*b + tmpC->PosW*c;
+	
 	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
 	this->PosH.z(1 / z3);
 	this->PosH.w(z3);
@@ -887,7 +902,7 @@ void WriteNormalVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseFo
 	float t1 = this->PosH.z()*tmpB->PosH.w() * b;
 	float t2 = this->PosH.z()*tmpC->PosH.w() * c;
 
-	
+	this->PosW = tmpA->PosW* t0 + tmpB->PosW*t1 + tmpC->PosW*t2;
 	this->NormalW = tmpA->NormalW * t0 + tmpB->NormalW * t1 + tmpC->NormalW * t2;
 	this->PosH = tmpA->PosH*a + tmpB->PosH*b + tmpC->PosH*c;
 }
@@ -1014,7 +1029,8 @@ NtVector4 SSAOShader::PixelShader(const NtVertexOutBaseFormat* pin)
 		NtVector3 sampleP =  viewP + offset * flip * OcclusionRadius;;
 		NtVector4 projTP = NtVector3To4(sampleP, 1.f)* ptM;
 		projTP.Perspective();
-		
+		if (projTP.x() > 1 || projTP.x() < 0 || projTP.y() < 0 || projTP.y() > 1)
+			continue;
 		//if (projTP.x() < 0|| projTP.y()>=1 || projTP.y() <0 || projTP.x() >= 1)
 		//	printf("warning");
 		float rz = pointTex2D(depthTex.get(),NtVector2(projTP.x(),projTP.y()))[0];
@@ -1125,4 +1141,77 @@ NtVector4 AmibentSSAOShader::PixelShader(const NtVertexOutBaseFormat* pin)
 	amb =ComponentMultiply( amb ,ao);
 	return  amb;
 }
+
+/*
+========================
+|	 Skybox      |
+========================
+*/
+
+ptrBase SkyboxVertexFormat::Copy()const
+{
+	sVFptr ret = mks_ptrSkybox;
+	ret->PosH = this->PosH;
+	ret->Posl = this->Posl;
+
+
+
+	return ret;
+}
+ptrBase SkyboxVertexFormat::LineInterpolation(const   NtVertexOutBaseFormat* rhs, float t)
+{
+	sVFptr ret = mks_ptrSkybox;
+	cVFptr tmpR = dynamic_cast<cVFptr>(rhs);
+	float vt = (1 - t);
+	ret->PosH = tmpR->PosH*  t + this->PosH * vt;
+	ret->Posl = tmpR->Posl* t + this->Posl * vt;
+
+
+	return ret;
+}
+
+void SkyboxVertexFormat::PerspectiveInterpolation(const   NtVertexOutBaseFormat* A, const  NtVertexOutBaseFormat* B, const  NtVertexOutBaseFormat* C,
+	float a, float b, float c)
+{
+
+	cVFptr tmpA = dynamic_cast<cVFptr>(A);
+	cVFptr tmpB = dynamic_cast<cVFptr>(B);
+	cVFptr tmpC = dynamic_cast<cVFptr>(C);
+
+
+	
+	float z3 = tmpA->PosH.w() * a + tmpB->PosH.w()*b + tmpC->PosH.w()*c;
+	this->PosH.z(1 / z3);
+	this->PosH.w(z3);
+	float t0 = this->PosH.z()*tmpA->PosH.w() * a;
+	float t1 = this->PosH.z()*tmpB->PosH.w() * b;
+	float t2 = this->PosH.z()*tmpC->PosH.w() * c;
+
+	this->Posl = tmpA->Posl* t0 + tmpB->Posl*t1+ tmpC->Posl*t2;
+	this->PosH = tmpA->PosH*a + tmpB->PosH*b + tmpC->PosH*c;
+	this->PosH.z(1.f);
+}
+
+
+
+ptrBase SkyboxShader::VertexShader(const NtVertex& vertex)
+{
+	sVFptr ret = mks_ptrSkybox;
+	ret->Posl = vertex.GetPostion();
+	NtVector4 posW = NtVector3To4(ret->Posl, (float)1.0) * w;
+	posW = posW + NtVector3To4(eyePosW);
+	
+	ret->PosH = posW * v * p;
+	//ret->PosW = ret->PosH;
+	ret->PosH.z(ret->PosH.w());
+
+	return ret;
+}
+NtVector4 SkyboxShader::PixelShader(const NtVertexOutBaseFormat* pin)
+{
+	cVFptr tmp = dynamic_cast<cVFptr> (pin);
+	return skybox->sample(tmp->Posl);
+}
+
+
 

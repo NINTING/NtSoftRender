@@ -158,18 +158,20 @@ public:
 
 	NtVector<T, BytesPerPixel> GetPixel(int x, int y)const
 	{
+		/*
 		if (x > Width_)x -= Width_;
 		if (y > Height_)y -= Height_;
 		if (x < 0)x = Width_ + x;
-		if (y < 0)y = Height_ + y;
+		if (y < 0)y = Height_ + y;\*/
 		NtVector<T, BytesPerPixel> ret;
-		
+	
 		size_t index = x * BytesPerPixel + y * Width_*BytesPerPixel;
 		memcpy(ret.raw, Buffer_+index, BytesPerPixel * sizeof(T));
 		//for (int i = 0; i < BytesPerPixel; i++)
 		//	ret[i] = Buffer_[index + i];
 		return ret;	
 	}
+
 	NtVector<T, BytesPerPixel> GetPixel(float x, float y)const
 	{
 		x = x*(Width_-1);
@@ -224,6 +226,7 @@ public:
 	}
 	void Set(int x, int y, const NtVector<T, BytesPerPixel>& color)
 	{
+		
 		int idx = x * BytesPerPixel + y * Width_*BytesPerPixel;
 		memcpy(Buffer_ + idx, color.raw, BytesPerPixel * sizeof(T));
 		//for (int i = 0; i < BytesPerPixel; i++)
@@ -367,6 +370,7 @@ using Tex2D_UC = NtImage<unsigned char, 4>;
 
 extern Tex2D_4F White2D;
 extern Tex2D_4F Bump2D;
+extern Tex2D_4F Black2D;
 //Tex2D_4F WhitePlain(int W, int H);
 
 Uint32 RGBAToUint32(NtColor4 color);
@@ -374,9 +378,29 @@ Uint32 RGBAToUint32(NtColor4 color);
 Tex2D_4F RGBAImageToFloat4Image(const Tex2D_UC&rhs);
 Tex2D_UC Float4ImageToRGBAImage(const Tex2D_4F&rhs);
 
+
+
 NtVector4 RGBAToFloat4(const NtColor4&rgba);
 
 NtColor4 Float4ToRGBA(const NtVector4&rhs);
 
-
+template<size_t t >
+Tex2D_4F FlotnFToFloat4F(const NtImage<float, t>&lhs)
+{
+	
+	float w = lhs.GetWidth();
+	float h = lhs.GetHeight();
+	Tex2D_4F ret(w, h);
+	for (int i = 0; i < h; i++)
+	{
+		for (int j = 0; j < w; j++)
+		{
+			NtVector4 color;
+			NtVector<float,t> p = lhs.GetPixel(j, i);
+			memcpy(color.raw, p.raw, sizeof(float)*t);
+			ret.Set(j, i, color);
+		}
+	}
+	return ret;
+}
 #endif

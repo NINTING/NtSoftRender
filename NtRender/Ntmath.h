@@ -161,40 +161,40 @@ public:
 template<typename T>
 class  NtVector<T, 4> :public NtVectorBase<T>
 {
-	
+
 public:
-	
-	NtVector(const NtVector<T, 3> &rhs , T w): NtVectorBase<T>(4, raw) {
+
+	NtVector(const NtVector<T, 3> &rhs, T w) : NtVectorBase<T>(4, raw) {
 		raw[0] = rhs.x();  raw[1] = rhs.y(); raw[2] = rhs.z(); raw[3] = w;
 	}
-	NtVector(T X, T Y , T Z , T W ) :NtVectorBase<T>(4,raw) { raw[0] = X;  raw[1] = Y; raw[2] = Z; raw[3] = W; }
-	NtVector() :NtVectorBase<T>(4,raw) {}
-	NtVector(const NtVector &rhs) :NtVectorBase<T>(4,raw) { 
+	NtVector(T X, T Y, T Z, T W) :NtVectorBase<T>(4, raw) { raw[0] = X;  raw[1] = Y; raw[2] = Z; raw[3] = W; }
+	NtVector() :NtVectorBase<T>(4, raw) {}
+	NtVector(const NtVector &rhs) :NtVectorBase<T>(4, raw) {
 		raw[0] = rhs.x();  raw[1] = rhs.y(); raw[2] = rhs.z(); raw[3] = rhs.w();
 	}
 
 	void normalize() { NtVectorBase<T>::normalize(); }
-	
+
 	NtVector& operator = (const NtVector&  rhs)
 	{
-	//	x (rhs.x());
-	//	y (rhs.y());
-	//	z (rhs.z());
-	//	w (rhs.w());
-		memcpy(raw, rhs.raw, 4*sizeof(T));
+		//	x (rhs.x());
+		//	y (rhs.y());
+		//	z (rhs.z());
+		//	w (rhs.w());
+		memcpy(raw, rhs.raw, 4 * sizeof(T));
 		return *this;
 	}
 	void Perspective()
 	{
-		x(raw[0]/raw[3]);
-		y(raw[1]/raw[3]);
-		z(raw[2]/raw[3]);
+		x(raw[0] / raw[3]);
+		y(raw[1] / raw[3]);
+		z(raw[2] / raw[3]);
 		w(1);
 	}
-	T raw[4] = {0};
+	T raw[4] = { 0 };
 
 	T x() const { return raw[0]; }
-	T y()const { return raw[1];  }
+	T y()const { return raw[1]; }
 	T z() const { return raw[2]; }
 	T w() const { return raw[3]; }
 
@@ -202,6 +202,9 @@ public:
 	T g()const { return raw[1]; }
 	T b() const { return raw[2]; }
 	T a() const { return raw[3]; }
+
+	NtVector<T, 3>xyz()const { return NtVector<T, 3>(x(), y(), z()); }
+	void xyz(NtVector<T, 3> xyz) { x(xyz.x()); y(xyz.y()); z(xyz.z()); }
 	void x(T x) { raw[0] = x; }
 	void y(T y) { raw[1] = y; }
 	void z(T z) { raw[2] = z; }
@@ -342,6 +345,9 @@ void  operator *= (NtVector<T, len>& lhs, T rhs)
 	}
 
 }
+
+
+
 template<typename  T>
 NtVector<T, 3> Cross(const NtVector<T, 3>& lhs, const NtVector<T, 3>&  rhs)
 {
@@ -603,5 +609,5 @@ NtMatrix4x4 NtMatrixOrthogonal(float Width, float Height, float NearZ, float Far
 
 NtColor4 Uint32ToRGBA(Uint32 t);
 
-
+NtMatrix4x4 Transiation(float x, float y, float z);
 #endif // !NTCOLOR_H

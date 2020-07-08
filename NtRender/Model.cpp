@@ -117,8 +117,13 @@ void Model::SetTangentTexture(const char*name)
 	Tex2D_UC tanTex = NtUtility::Read_file(name);
 	tangentTex = std::make_shared<Tex2D_4F>();
 	*tangentTex = (std::move(RGBAImageToFloat4Image(tanTex)));
+}
 
-
+void Model::SetEmissionTexture(const char*name)
+{
+	Tex2D_UC EmissionTex = NtUtility::Read_file(name);
+	EmissionTexture = std::make_shared<Tex2D_4F>();
+	*EmissionTexture = (std::move(RGBAImageToFloat4Image(EmissionTex)));
 }
 
 void Model::Assemble(NtSofterRender*render)

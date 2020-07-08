@@ -287,7 +287,7 @@ void  NtSofterRender::HomogeneousCoordinateCropping(ptrBase  Tri[])
 		}
 
 	}
-
+	
 	for (int i = 1; i < out.size() - 1 && out.size() >= 3; i++)
 	{
 		Primitive.push_back(std::vector<ptrBase>{out[0], out[i], out[i + 1]});
@@ -299,7 +299,7 @@ static NtVector3 Barycentric(NtVector3 *  v, const NtVector2& P)
 
 	NtVector3 tmp = Cross(NtVector3(v[1].x() - v[0].x(), v[2].x() - v[0].x(), v[0].x() - P.x()), NtVector3(v[1].y() - v[0].y(), v[2].y() - v[0].y(), v[0].y() - P.y()));
 	//如果z分量为0，则三角形退化，返回分量为负的向量
-	if (std::abs(tmp.z()) > 1e-2)
+	if (std::abs(tmp.z()) >= 1)
 	{
 		float u = tmp.x() / tmp.z();
 		float v = tmp.y() / tmp.z();
@@ -336,6 +336,7 @@ void NtSofterRender::BarycentricTriangle(const NtVertexOutBaseFormat* v0, const 
 	ptrBase pixelVertex = Tri[0]->Copy();
 
 	int pixelnum = 0;
+
 	/*遍历像素*/
 	for (int y = ceilf(BoundBox[0].y()); y <= BoundBox[1].y(); y++)
 	{
@@ -344,7 +345,7 @@ void NtSofterRender::BarycentricTriangle(const NtVertexOutBaseFormat* v0, const 
 
 			NtVector2 P = NtVector2(x, y);
 			NtVector3 u = Barycentric(TriPosH, P);
-			if (u.x() < 0 || u.y() < 0 || u.z() < 0)
+			if (u.x() <= -0.01 || u.y() <= -0.01 || u.z() <= -0.01)
 				continue;
 
 			//通过三角形重心坐标插值计算点P的Z分量
@@ -356,18 +357,19 @@ void NtSofterRender::BarycentricTriangle(const NtVertexOutBaseFormat* v0, const 
 			NtVector4 color;
 			int w = BackBuffer_->GetWidth();
 			int index = x + y * w;
-
-
-			if (pixelVertex->PosH.z() < ZBuffer_->GetPixel(x,y)[0])
+		
+			
+			if (ZTest(x,y, pixelVertex->PosH.z()))
 			{
 				if (rt_ & BackBufferOn) {
 					 color = shader_->PixelShader(pixelVertex.get());
 				}
 				//printf("%d\n", color.GetColor32());
-
+			
 				OutputMerge(x, y, pixelVertex->PosH.z(), color);
 
 			}
+
 		}
 
 	}
@@ -406,6 +408,16 @@ NtVector4 NtSofterRender::Blend(const NtVector4& src,const NtVector4& dest)
 	}
 	return ComponentMultiply(srcf , src) + ComponentMultiply(dest,destf);
 }
+bool NtSofterRender::ZTest(int x,int y,float z)
+{
+	if (zTest == Less)
+		return z < ZBuffer_->GetPixel(x, y)[0];
+	if (zTest == LessEqual)
+		return z <= ZBuffer_->GetPixel(x, y)[0];
+	if (zTest == Equal)
+		return z == ZBuffer_->GetPixel(x, y)[0];
+}
+
 
 void NtSofterRender::OutputMerge(int x, int y, float z, NtVector4 color)
 {
@@ -444,6 +456,11 @@ Tex2D_UC NtSofterRender::Present()
 void NtSofterRender::SetRenderState(RenderState rs)
 {
 	rs_ = rs;
+}
+
+void NtSofterRender::SetZTestStat(ZTestEnum zs)
+{
+	zTest = zs;
 }
 void NtSofterRender::SetRenderTarget(RenderTarget target)
 { 
@@ -504,15 +521,15 @@ void NtSofterRender::SetRTT(Tex2D_4F*target)
 {
 	tmpBackBuffer_ = BackBuffer_;
 	BackBuffer_ = target;
-	Viewport_.width = target->GetWidth();
-	Viewport_.height = target->GetHeight();
+	Viewport_.width = target->GetWidth()-1;
+	Viewport_.height = target->GetHeight()-1;
 }
 void NtSofterRender::ResetRTT()
 {
 	if (tmpBackBuffer_) {
 		BackBuffer_ = tmpBackBuffer_;
 		tmpBackBuffer_ = nullptr;
-		Viewport_.width = BackBuffer_->GetWidth();
-		Viewport_.height = BackBuffer_->GetHeight();
+		Viewport_.width = BackBuffer_->GetWidth()-1;
+		Viewport_.height = BackBuffer_->GetHeight()-1;
 	}
 }

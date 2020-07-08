@@ -6,6 +6,7 @@
 #include<vector>
 #include"LightHelper.h"
 #include"NtImage.h"
+#include"NtCube.h"
 class NtGroudVertexFormat;
 
 /*
@@ -35,8 +36,9 @@ NtVector<T, n> linearTex2D(const NtImage<T, n>*img,const NtVector2&uv)
 template<class T, size_t n>
 NtVector<T, n> pointTex2D(const NtImage<T, n>*img, const NtVector2&uv)
 {
-	int x = uv.x()*img->GetWidth()+0.5;
-	int y = uv.y()*img->GetHeight()+0.5;
+	int x = uv.x()*(img->GetWidth()-1)+0.5;
+	int y = uv.y()*(img->GetHeight()-1)+0.5;
+
 	return img->GetPixel(x, y);
 }
 
@@ -225,10 +227,12 @@ public:
 	std::vector<LightConstant> DirectionalLights;
 	std::vector<LightConstant> PointLights;
 	std::vector<LightConstant> SpotLights;
+
 	NtVector4 Ambient;
 	std::shared_ptr<Tex2D_4F>diffuseTex = WhiteTex;
 	std::shared_ptr<Tex2D_4F>normalTex = BumpTex;
 	std::shared_ptr<Tex2D_4F>specularTex = WhiteTex;
+	std::shared_ptr<Tex2D_4F>emissionTex = BlackTex;
 	NtVector3 EyePosW;
 	MaterialConstant mat;
 	
@@ -286,6 +290,7 @@ public:
 	std::shared_ptr<Tex2D_4F>diffuseTex = WhiteTex;
 	std::shared_ptr<Tex2D_4F>tangentTex = BumpTex;
 	std::shared_ptr<Tex2D_4F>specularTex = WhiteTex;
+	std::shared_ptr<Tex2D_4F>emissionTex = BlackTex;
 	NtVector3 EyePosW;
 	MaterialConstant mat;
 
@@ -583,6 +588,50 @@ public:
 	virtual NtVector4 PixelShader(const NtVertexOutBaseFormat* pin);
 
 
+};
+
+
+
+/*
+========================
+|	    Skybox        |
+========================
+*/
+
+#define mks_ptrSkybox std::make_shared<SkyboxVertexFormat>() 
+
+class SkyboxVertexFormat :public NtVertexOutBaseFormat
+{
+public:
+	using sVFptr = std::shared_ptr<SkyboxVertexFormat>;
+	using VFptr = SkyboxVertexFormat * ;
+	using cVFptr = const SkyboxVertexFormat *;
+public:
+	SkyboxVertexFormat() = default;
+	//SkyboxVertexFormat(const NtVector4& posH, const NtVector3&posW) : NtVertexOutBaseFormat(posH), Posl(posW) {}
+	virtual ptrBase Copy()const;
+	virtual ptrBase LineInterpolation(const NtVertexOutBaseFormat* rhs, float t);
+	virtual void PerspectiveInterpolation(const   NtVertexOutBaseFormat* A, const  NtVertexOutBaseFormat* B, const  NtVertexOutBaseFormat* C,
+		float a, float b, float c);
+	virtual ~SkyboxVertexFormat() = default;
+
+public:
+	NtVector3 Posl;//ÊÀ½ç×ø±ê
+};
+
+class SkyboxShader :public NtShader
+{
+
+public:
+	NtVector3 eyePosW;
+	std::shared_ptr<NtCubeTex4F> skybox;
+public:
+
+
+	using sVFptr = SkyboxVertexFormat::sVFptr;
+	using cVFptr = SkyboxVertexFormat::cVFptr;
+	virtual ptrBase VertexShader(const NtVertex& vertex);
+	virtual NtVector4 PixelShader(const NtVertexOutBaseFormat* pin);
 };
 
 #endif // !EFFECT_H

@@ -57,6 +57,9 @@
     <ClCompile Include="NtShader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="NtSkybox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Nt.h">
@@ -102,6 +105,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="NtCube.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NtSkybox.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

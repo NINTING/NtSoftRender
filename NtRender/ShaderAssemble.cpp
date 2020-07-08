@@ -46,7 +46,9 @@ void TPhoneAssemble(const Model& model, const NtCamera& camera, NtSofterRender* 
 		gs->tangentTex = model.GetTangentTex();
 	if (model.GetSpecularTex())
 		gs->specularTex = model.GetSpecularTex();
-	gs->w = world;
+	if (model.GetEmissionTex())
+		gs->emissionTex = model.GetEmissionTex();
+	gs->w = model.GetWorld();
 	gs->v = camera.GetViewMatrix();
 	gs->p = camera.GetProjMatrix();
 	gs->EyePosW = camera.GetPos();
@@ -68,11 +70,11 @@ void STPhoneAssemble(const Model& model, const NtCamera& camera, NtSofterRender*
 	const Light& dirctionalLight, const NtVector4&Ambient, const ShadowMap& shadowMap)
 {
 	NtMatrix4x4 world = NtMatrix4x4();
-	render->SetRenderTarget(BackBufferOff);
+	render->SetRenderTarget(BackBufferOn);
 
 	STPhoneShader*gs = new STPhoneShader();
 	gs->diffuseTex = model.GetDiffuseTex();
-	gs->w = world;
+	gs->w = model.GetWorld();
 	gs->v = camera.GetViewMatrix();
 	gs->p = camera.GetProjMatrix();
 	gs->EyePosW = camera.GetPos();
@@ -107,7 +109,8 @@ void BlendAssemble(const Model& model, const NtCamera& camera, NtSofterRender* r
 	gs->DirectionalLight = *dirctionalLight.GetLightConstant();
 	gs->Ambient = Ambient;
 	gs->BlendScale = blendScale;
-	
+	if(model.GetDiffuseTex())
+	gs->diffuse = model.GetDiffuseTex();
 	//准备深度图
 	render->SetRenderTarget(BlendOn);
 	render->SetRenderTarget(BackBufferOn);
@@ -121,7 +124,7 @@ void BlendAssemble(const Model& model, const NtCamera& camera, NtSofterRender* r
 
 	//渲染
 	render->SetRenderTarget(BlendOn);
-	render->SetRenderTarget(ZwriteOff);
+	render->SetRenderTarget(ZwriteOn);
 	render->SetCullState(Cullback);
 	render->SetBlendFactor(AlphaSrc, OneMinusAlphaDest);
 	render->SetRenderTarget(BackBufferOn);
@@ -179,8 +182,8 @@ void SSAOAssemble(const Model& model, const NtCamera& camera, NtSofterRender* re
 			ssao->normalTex = std::make_shared<Tex2D_4F>(*render->GetBackBuffer());
 			render->CleanBackAndDepthBuffer();
 
-		ssao->OcclusionFadeStart = 0.2f;
-		ssao->OcclusionFadeEnd = 2.f;
+		ssao->OcclusionFadeStart = 0.1f;
+		ssao->OcclusionFadeEnd = 0.2f;
 
 
 	
@@ -192,8 +195,8 @@ void SSAOAssemble(const Model& model, const NtCamera& camera, NtSofterRender* re
 		ssao->p = camera.GetProjMatrix();
 		ssao->ptM = ssao->p*T;
 		ssao->sampleCount = 14;
-		ssao->surfaceEpsilon = 0.05f;
-		ssao->OcclusionRadius = 0.5f;
+		ssao->surfaceEpsilon = 0.03f;
+		ssao->OcclusionRadius = 0.2f;
 		
 		NtUtility::RandomNormalImage(ssaow, ssaoh, &ssao->randomNormalTex);
 

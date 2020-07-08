@@ -3,8 +3,9 @@
 
 class NtVertexOutBaseFormat;
 
-#define WhiteTex std::make_shared<Tex2D_4F>(White2D);
-#define BumpTex std::make_shared<Tex2D_4F>(Bump2D);
+#define WhiteTex std::make_shared<Tex2D_4F>(White2D)
+#define BlackTex std::make_shared<Tex2D_4F>(Black2D)
+#define BumpTex std::make_shared<Tex2D_4F>(Bump2D)
 
 #define mks_ptrBase std::make_shared<NtVertexOutBaseFormat>()
 #define ptrBase std::shared_ptr<NtVertexOutBaseFormat> 

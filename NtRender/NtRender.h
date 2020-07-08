@@ -14,6 +14,7 @@ enum RenderState
 {
 	Wireframe,
 	GroundShading,
+	Skybox,
 };
 enum ProjMatrix
 {
@@ -37,6 +38,10 @@ enum CullEnum
 	CullFront,
 	NoCull
 };
+enum ZTestEnum
+{
+	Less,LessEqual,Equal
+};
 
 enum BlendFactor
 {
@@ -45,6 +50,8 @@ enum BlendFactor
 	AlphaSrc,
 	OneMinusAlphaDest,
 };
+
+
 
 class NtSofterRender
 {
@@ -58,7 +65,7 @@ private:
 	int rt_ = RenderTarget::BackBufferOn|ZwriteOn;
 	ProjMatrix pm_ = frustum;
 	CullEnum CullState = Cullback;
-	
+	ZTestEnum zTest = Less;
 public:
 	static std::shared_ptr<NtSofterRender>& Instance(int Width = 0, int Height = 0)
 	{
@@ -118,6 +125,7 @@ public:
 	}
 	*/
 public:
+	void SetZTestStat(ZTestEnum zt);
 	void SetRenderState(RenderState rs);
 	void SetRenderTarget(RenderTarget target);
 	void SetBlendFactor(BlendFactor src, BlendFactor dest);
@@ -135,6 +143,7 @@ private:
 	void BarycentricTriangle(const NtVertexOutBaseFormat* v0, const NtVertexOutBaseFormat* v1, const  NtVertexOutBaseFormat* v2);
 	void Line(const NtVertexOutBaseFormat* v0, const  NtVertexOutBaseFormat* v1);
 	//Êä³öºÏ²¢
+	bool ZTest(int x, int y, float z);
 	void OutputMerge(int x, int y, float z, NtVector4 color);
 	NtVector4 Blend(const NtVector4& src,const NtVector4& dest);
 	void CleanZBuffer() { 

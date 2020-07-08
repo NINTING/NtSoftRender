@@ -27,7 +27,7 @@ class NtVertex
 public:
 	NtVertex() {};
 	
-	NtVertex(NtVector3 Position, NtVector3 Diffuse = NtVector3(), NtVector3 Normal = NtVector3())
+	NtVertex(NtVector3 Position, NtVector3 Diffuse = NtVector3(), NtVector3 Normal = NtVector3(), NtVector3 TangentU = NtVector3())
 		:Position(Position), Diffuse(Diffuse), Normal(Normal) {}
 	NtVector3 GetPostion()const { return Position; }
 	NtVector3 GetDiffuse()const { return Diffuse; }

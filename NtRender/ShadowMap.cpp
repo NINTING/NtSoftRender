@@ -3,16 +3,17 @@
 #include"NtImage.h"
 #include"Effect.h"
 #include"Model.h"
+#include<vector>
 ShadowMap::ShadowMap(NtSofterRender*render, int w, int h)
 {
 	render_ = render;
 	Width_ = w;
 	Height_ = h;
-	vp_ = {0.f,0.f,float(w),float(h),0.01f,1.f};
+	vp_ = {0.f,0.f,float(w-1),float(h-1),0.01f,1.f};
 	
 
 }	
-std::shared_ptr<Tex2D_1F> ShadowMap::BuildDepthMap(const NtMatrix4x4&w, const Model&model)
+std::shared_ptr<Tex2D_1F> ShadowMap::BuildDepthMap(const std::vector<Model>&models)
 {
 	DepthMap_ = std::make_shared<Tex2D_1F>(Width_,Height_,1.f);
 
@@ -23,14 +24,17 @@ std::shared_ptr<Tex2D_1F> ShadowMap::BuildDepthMap(const NtMatrix4x4&w, const Mo
 	ShadowShader* shadowshader = new ShadowShader();
 	shadowshader->p = lightCamera_.GetProjMatrix();
 	shadowshader->v = lightCamera_.GetViewMatrix();
-	shadowshader->w = w;
-	render_->SetViewport(vp_);
 	render_->SetShader(shadowshader);
-	render_->SetVertexBuffer(model.GetVertexsBuffer());
-	render_->SetIndexBuffer(model.GetIndicesBuffer());
 	render_->SetDepthBuffer(DepthMap_.get());
-	render_->Draw();
-
+	for (int i = 0; i < models.size();i++) {
+		shadowshader->w = models[i].GetWorld();
+		render_->SetViewport(vp_);
+		
+		render_->SetVertexBuffer(models[i].GetVertexsBuffer());
+		render_->SetIndexBuffer(models[i].GetIndicesBuffer());
+	
+		render_->Draw();
+	}
 	render_->SetDepthBuffer(nullptr);
 
 	

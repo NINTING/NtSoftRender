@@ -12,7 +12,7 @@ public:
 	ShadowMap() {};
 	ShadowMap(NtSofterRender*render, int w, int h);
 
-	std::shared_ptr<Tex2D_1F> BuildDepthMap(const NtMatrix4x4&w, const Model&model);
+	std::shared_ptr<Tex2D_1F> BuildDepthMap(const std::vector<Model>&models);
 	void SetMainLight(const NtCamera&camera);
 	std::shared_ptr<Tex2D_1F> GetShadowMap()const { return DepthMap_; }
 	NtMatrix4x4 GetViewMatrix()const { return lightCamera_.GetViewMatrix();}
